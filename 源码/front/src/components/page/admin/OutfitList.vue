@@ -168,7 +168,7 @@ export default {
         fileUrl: null,
         dialogVisible: false,
         form: {
-            productIds: ''
+            productIds: '[]'
         },
         rules: {
           image: [
@@ -251,7 +251,13 @@ export default {
             currentPage: 1,
             pagesize: 100,
         }).then(res => {
-            this.products = res.data.data.list;
+            if (res.data && res.data.code === 200) {
+                this.products = res.data.data.list || [];
+            } else {
+                this.$message.error(res.data.msg || '获取商品列表失败');
+            }
+        }).catch(error => {
+            this.$message.error('请求商品列表失败：' + error.message);
         });
     },
     queryuser(){
