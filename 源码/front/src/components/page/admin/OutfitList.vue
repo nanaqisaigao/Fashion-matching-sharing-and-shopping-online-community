@@ -126,6 +126,11 @@ export default {
       userInfo: {}
     };
   },
+  created() {
+    this.userInfo = this.common.getUserInfo('userInfo');
+    this.type = this.common.get('type');
+    this.getData();
+  },
   methods: {
     handleAdd() {
       this.dialogName = "穿搭信息新增";

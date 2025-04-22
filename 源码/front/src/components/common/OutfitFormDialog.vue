@@ -49,7 +49,7 @@
     </span>
 
     <!-- 商品选择弹窗 -->
-    <el-dialog title="选择商品" :visible.sync="showProductDialog" width="80%">
+    <el-dialog title="选择商品" :visible.sync="showProductDialog" width="80%" append-to-body>
       <div class="products-container">
         <div class="products-grid">
           <div v-for="product in paginatedProducts" :key="product.id" class="product-card" @click="toggleProductSelection(product.id)">
