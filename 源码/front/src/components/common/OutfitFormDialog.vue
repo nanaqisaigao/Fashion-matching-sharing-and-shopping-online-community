@@ -91,7 +91,7 @@ Quill.register("modules/ImageExtend", ImageExtend);
 import 'quill/dist/quill.core.css';
 import 'quill/dist/quill.snow.css';
 import 'quill/dist/quill.bubble.css';
-import { isIntNumer } from '../../../utils/checkForm';
+import { isIntNumer } from '@/utils/checkForm';
 
 export default {
   name: 'OutfitFormDialog',
