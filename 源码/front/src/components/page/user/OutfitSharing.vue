@@ -122,7 +122,7 @@ export default {
         if (res.data.code === 200) {
           this.$message.success(res.data.msg);
           this.dialogVisible = false;
-          this.handlePageChange();
+          this.handlePageChange(1);
         }
       });
     },
