@@ -42,4 +42,9 @@ public interface OutfitMapper extends MyMapper<Outfit> {
     */
     int deleteById(Integer id);
 
+    /**
+     * 根据商品ID查询相关穿搭分享
+     */
+    List<Outfit> findRelatedOutfits(String productId);
+
 }

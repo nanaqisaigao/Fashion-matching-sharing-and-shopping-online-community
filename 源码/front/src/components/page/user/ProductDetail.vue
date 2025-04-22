@@ -112,6 +112,20 @@
     </div>
 
     <!-- 商品详情和评价区域 -->
+    <!-- 相关帖子模块 -->
+    <div class="related-outfits-section">
+      <h3>相关穿搭分享</h3>
+      <div class="outfits-grid">
+        <div v-for="outfit in relatedOutfits" :key="outfit.id" class="outfit-card" @click="$router.push({ path: `/user/outfit/${outfit.id}`, query: { timestamp: new Date().getTime() } })">
+          <img :src="outfit.image" :alt="outfit.name">
+          <div class="outfit-info">
+            <h4>{{ outfit.name }}</h4>
+            <p class="views"><i class="el-icon-view"></i> {{ outfit.views }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="product-detail-tabs">
       <el-tabs v-model="activeTab" type="border-card">
         <el-tab-pane label="商品详情" name="details">
@@ -164,6 +178,7 @@ export default {
       showBuyDialog: false, // 控制购买对话框显示
       orderRemark: '', // 订单备注
       submitting: false, // 提交状态
+      relatedOutfits: [] // 新增：存储相关穿搭数据
     }
   },
   computed: {
@@ -172,6 +187,14 @@ export default {
     }
   },
   methods: {
+    // 新增：获取相关穿搭数据
+    fetchRelatedOutfits() {
+      this.$axios.get(`/api/outfit/relatedToProduct?productId=${this.productId}`).then(res => {
+        if (res.data.code === 200) {
+          this.relatedOutfits = res.data.data || [];
+        }
+      });
+    },
     // 处理对话框关闭
     handleDialogClose() {
       this.showBuyDialog = false
@@ -261,8 +284,9 @@ export default {
   created() {
     this.userInfo = this.common.getUserInfo('userInfo');
     this.type = this.common.get("type");
-    this.productId = this.$route.params.id
-    this.getData()
+    this.productId = this.$route.params.id;
+    this.getData();
+    this.fetchRelatedOutfits(); // 新增：调用获取相关穿搭数据
   }
 }
 </script>
@@ -635,5 +659,59 @@ export default {
   font-size: 20px;
   font-weight: bold;
   margin-left: 10px;
+}
+
+/* 新增：相关帖子模块样式 */
+.related-outfits-section {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.related-outfits-section h3 {
+  margin-bottom: 15px;
+  font-size: 18px;
+  color: #333;
+}
+
+.outfits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.outfit-card {
+  border: 1px solid #eee;
+  border-radius: 4px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.3s;
+}
+
+.outfit-card:hover {
+  transform: translateY(-5px);
+}
+
+.outfit-card img {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+}
+
+.outfit-info {
+  padding: 10px;
+}
+
+.outfit-info h4 {
+  margin: 0 0 5px;
+  font-size: 14px;
+  color: #333;
+}
+
+.outfit-info .views {
+  font-size: 12px;
+  color: #999;
 }
 </style> 

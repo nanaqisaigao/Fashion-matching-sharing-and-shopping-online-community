@@ -131,6 +131,15 @@ public class OutfitController {
         return Result.success(list);
     }
 
+    /**
+     * 获取与商品相关的穿搭分享
+     */
+    @GetMapping("/relatedToProduct")
+    @PassToken
+    public Result relatedToProduct(@RequestParam String productId) {
+        List<Outfit> relatedOutfits = outfitService.findRelatedOutfits(productId);
+        return Result.success(relatedOutfits);
+    }
 
     @PostMapping("/recommend")
     @PassToken

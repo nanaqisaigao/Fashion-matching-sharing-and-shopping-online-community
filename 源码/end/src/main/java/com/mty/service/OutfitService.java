@@ -61,4 +61,11 @@ public class OutfitService {
         return outfitMapper.deleteById(id) > 0;
     }
 
+    /**
+     * 根据商品ID查询相关穿搭分享
+     */
+    public List<Outfit> findRelatedOutfits(String productId) {
+        return outfitMapper.findRelatedOutfits(productId);
+    }
+
 }

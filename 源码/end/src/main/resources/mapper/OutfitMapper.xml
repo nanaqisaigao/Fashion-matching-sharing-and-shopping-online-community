@@ -200,4 +200,14 @@
         delete from outfit where id=#{id}
     </delete>
 
+    <!-- 根据商品ID查询相关穿搭分享 -->
+    <select id="findRelatedOutfits" resultType="com.mty.entity.Outfit">
+        select 
+        <include refid="Base_Column_List" /> 
+        from outfit
+        left join user on outfit.uid = user.id
+        where outfit.product_ids LIKE CONCAT('%', #{productId}, '%')
+        order by outfit.num desc
+    </select>
+
 </mapper>
