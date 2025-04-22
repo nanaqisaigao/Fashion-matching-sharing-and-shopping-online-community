@@ -111,21 +111,22 @@
       </div>
     </div>
 
-    <!-- 商品详情和评价区域 -->
-    <!-- 相关帖子模块 -->
-    <div class="related-outfits-section">
+
+      <!-- 相关帖子模块 -->
+      <div class="related-outfits-section">
       <h3>相关穿搭分享</h3>
       <div class="outfits-grid">
         <div v-for="outfit in relatedOutfits" :key="outfit.id" class="outfit-card" @click="$router.push({ path: `/user/outfit/${outfit.id}`, query: { timestamp: new Date().getTime() } })">
           <img :src="outfit.image" :alt="outfit.name">
           <div class="outfit-info">
             <h4>{{ outfit.name }}</h4>
-            <p class="views"><i class="el-icon-view"></i> {{ outfit.views }}</p>
+            <p class="views"><i class="el-icon-view"></i> {{ outfit.num }}</p>
           </div>
         </div>
       </div>
     </div>
 
+    <!-- 商品详情和评价区域 -->
     <div class="product-detail-tabs">
       <el-tabs v-model="activeTab" type="border-card">
         <el-tab-pane label="商品详情" name="details">
@@ -157,6 +158,8 @@
         </el-tab-pane>
       </el-tabs>
     </div>
+
+    
   </div>
 </template>
 
