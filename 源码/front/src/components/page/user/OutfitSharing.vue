@@ -93,7 +93,7 @@ export default {
   created() {
     this.userInfo = this.common.getUserInfo('userInfo');
     this.form.uid = this.userInfo.id;
-    this.getData();
+    this.handlePageChange(1);
   },
   filters: { 
     filtersText1(val) {
@@ -122,7 +122,7 @@ export default {
         if (res.data.code === 200) {
           this.$message.success(res.data.msg);
           this.dialogVisible = false;
-          this.getData();
+          this.handlePageChange();
         }
       });
     },
