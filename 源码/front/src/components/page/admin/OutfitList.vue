@@ -105,22 +105,31 @@
 
     <!-- 商品选择弹窗 -->
     <el-dialog title="选择商品" :visible.sync="showProductDialog" width="80%">
-        <div class="products-grid">
-            <div v-for="product in products" :key="product.id" class="product-card" @click="toggleProductSelection(product.id)">
-                <div class="product-image">
-                    <img :src="product.image" :alt="product.name">
-                </div>
-                <div class="product-info">
-                    <h3 class="product-name">{{ product.name }}</h3>
-                    <p class="product-desc">{{ product.remark }}</p>
-                    <div class="product-meta">
-                        <span class="price">¥{{ product.money }}</span>
+        <div class="products-container">
+            <div class="products-grid">
+                <div v-for="product in paginatedProducts" :key="product.id" class="product-card" @click="toggleProductSelection(product.id)">
+                    <div class="product-image">
+                        <img :src="product.image" :alt="product.name" style="width: 80px; height: 80px; object-fit: cover;">
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-name">{{ product.name }}</h3>
+                        <p class="product-desc">{{ product.remark }}</p>
+                        <div class="product-meta">
+                            <span class="price">¥{{ product.money }}</span>
+                        </div>
+                    </div>
+                    <div class="product-selection" v-if="selectedProducts.includes(product.id)">
+                        <i class="el-icon-check"></i>
                     </div>
                 </div>
-                <div class="product-selection" v-if="selectedProducts.includes(product.id)">
-                    <i class="el-icon-check"></i>
-                </div>
             </div>
+            <el-pagination
+                @current-change="handlePageChange"
+                :current-page="currentPage"
+                :page-size="5"
+                layout="prev, pager, next"
+                :total="products.length">
+            </el-pagination>
         </div>
         <div slot="footer" class="dialog-footer">
             <el-button @click="showProductDialog = false">取消</el-button>
@@ -158,10 +167,10 @@ export default {
         showProductDialog: false,
         products: [],
         selectedProducts: [],
+        currentPage: 1,
         query: {},
         dialogName: '', 
         tableData: [],    // 所有的数据
-        currentPage: 1,   // 当前的页码
         pagesize: 10,     // 每页显示的个数
         totalCount: 0,    // 总条数
         imageUrl: null,
@@ -224,6 +233,13 @@ export default {
         userInfo:{},
     };
   },
+  computed: {
+    paginatedProducts() {
+        const start = (this.currentPage - 1) * 5;
+        const end = start + 5;
+        return this.products.slice(start, end);
+    }
+  },
   created() {
       this.fetchProducts();
       this.type = this.common.get('type');
@@ -234,6 +250,9 @@ export default {
       this.getData();
   },
   methods: {
+    handlePageChange(page) {
+        this.currentPage = page;
+    },
     toggleProductSelection(id) {
         const index = this.selectedProducts.indexOf(id);
         if (index === -1) {
