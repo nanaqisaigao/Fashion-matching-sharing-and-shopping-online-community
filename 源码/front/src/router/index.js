@@ -97,7 +97,9 @@ export default new Router({
                 {
                     path: '/user/outfit/:id',
                     component: () => import('../components/page/user/OutfitDetail.vue'),
-                    meta: {title: '穿搭详情'}
+                    meta: {title: '穿搭详情'},
+                    props: true,
+                    key: route => route.fullPath
                 },
                 {
                     path: '/user/outfit',
@@ -112,7 +114,9 @@ export default new Router({
                 {
                     path: '/user/shop/product/:id',
                     component: () => import('../components/page/user/ProductDetail.vue'),
-                    meta: {title: '商品详情'}
+                    meta: {title: '商品详情'},
+                    props: true,
+                    key: route => route.fullPath
                 },
                 {
                     path: '/user/forum',

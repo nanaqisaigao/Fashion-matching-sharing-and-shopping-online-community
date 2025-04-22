@@ -119,6 +119,13 @@ export default {
     this.fetchOutfitDetail();
     this.recomment();
   },
+  watch: {
+    '$route.params.id'(newId) {
+      this.id = newId;
+      this.fetchOutfitDetail();
+      this.recomment();
+    }
+  },
   methods: {
     submitComment() {
         if (!this.newComment.trim()) {
