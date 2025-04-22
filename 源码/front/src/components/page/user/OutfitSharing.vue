@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="outfit-container">
     <!-- 筛选栏 -->
     <div class="filter-section">
       <el-select v-model="filter.style" placeholder="风格" size="small" @change="handlePageChange(1)">
@@ -29,7 +29,7 @@
     ></outfit-form-dialog>
 
     <!-- 穿搭列表 -->
-    <div class="outfits-list">
+    <div class="outfit-grid">
       <div v-for="outfit in outfits" :key="outfit.id" class="outfit-card" @click="viewDetail(outfit.id)">
         <div class="outfit-image">
           <img :src="outfit.image" :alt="outfit.name">
@@ -47,6 +47,17 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- 分页 -->
+    <div class="pagination">
+      <el-pagination
+        background
+        layout="prev, pager, next"
+        :total="total"
+        :current-page.sync="currentPage"
+        @current-change="handlePageChange">
+      </el-pagination>
     </div>
   </div>
 </template>
