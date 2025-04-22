@@ -52,7 +52,7 @@
                 param: {
                     phone: '',
                     password: '',
-                    type:'01',
+                    type:'02',
                 },
                 rules: {
                     phone: [{required: true, message: '请输入账号', trigger: 'blur'}],
