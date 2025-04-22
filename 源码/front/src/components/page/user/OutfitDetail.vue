@@ -34,7 +34,7 @@
           <div class="items-section" v-if="relatedProducts.length > 0">
             <h3>关联商品</h3>
             <div class="items-grid">
-              <div v-for="product in relatedProducts" :key="product.id" class="item-card">
+              <div v-for="product in relatedProducts" :key="product.id" class="item-card" @click="$router.push({ name: 'ProductDetail', params: { id: product.id } })">
                 <img :src="product.image" :alt="product.name">
                 <div class="item-info">
                   <h4>{{ product.name }}</h4>
@@ -80,15 +80,14 @@
       </div>
 
       <!-- 右侧推荐区 -->
-      <div class="recommend-section">
+      <div class="recommendations-section">
         <h3>相关推荐</h3>
-        <div class="recommend-list" style="margin-top: 14px;">
-          <div v-for="item in recommendations" :key="item.id" 
-               class="recommend-item" @click="viewOutfit(item.id)">
-            <img :src="item.image" :alt="item.title">
-            <div class="recommend-info">
-              <h4>{{ item.title }}</h4>
-              <span>{{ item.comments }} 评</span>
+        <div class="recommendations-grid">
+          <div v-for="item in recommendations" :key="item.id" class="recommendation-card" @click="$router.push({ name: 'OutfitDetail', params: { id: item.id } })">
+            <img :src="item.image" :alt="item.name">
+            <div class="recommendation-info">
+              <h4>{{ item.name }}</h4>
+              <p class="views"><i class="el-icon-view"></i> {{ item.num }}</p>
             </div>
           </div>
         </div>
@@ -367,7 +366,7 @@ export default {
   color: #f3c3cc;
 }
 
-.recommend-section {
+.recommendations-section {
   background: #fff;
   border-radius: 8px;
   padding: 20px;
@@ -378,28 +377,28 @@ export default {
   overflow-y: auto;
 }
 
-.recommend-item {
+.recommendation-card {
   margin-bottom: 15px;
   cursor: pointer;
 }
 
-.recommend-item img {
+.recommendation-card img {
   width: 100%;
   height: 150px;
   object-fit: cover;
   border-radius: 4px;
 }
 
-.recommend-info {
+.recommendation-info {
   padding: 10px 0;
 }
 
-.recommend-info h4 {
+.recommendation-info h4 {
   margin: 0;
   font-size: 14px;
 }
 
-.recommend-info span {
+.recommendation-info p {
   color: #999;
   font-size: 12px;
 }
