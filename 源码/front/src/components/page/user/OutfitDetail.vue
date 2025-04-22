@@ -34,7 +34,7 @@
           <div class="items-section" v-if="relatedProducts.length > 0">
             <h3>关联商品</h3>
             <div class="items-grid">
-              <div v-for="product in relatedProducts" :key="product.id" class="item-card" @click="$router.push({ name: 'ProductDetail', params: { id: product.id } })">
+              <div v-for="product in relatedProducts" :key="product.id" class="item-card" @click="$router.push({ path: `/user/shop/product/${product.id}`, query: { timestamp: new Date().getTime() } })">
                 <img :src="product.image" :alt="product.name">
                 <div class="item-info">
                   <h4>{{ product.name }}</h4>
@@ -83,7 +83,7 @@
       <div class="recommendations-section">
         <h3>相关推荐</h3>
         <div class="recommendations-grid">
-          <div v-for="item in recommendations" :key="item.id" class="recommendation-card" @click="$router.push({ name: 'OutfitDetail', params: { id: item.id } })">
+          <div v-for="item in recommendations" :key="item.id" class="recommendation-card" @click="$router.push({ path: `/user/outfit/${item.id}`, query: { timestamp: new Date().getTime() } })">
             <img :src="item.image" :alt="item.name">
             <div class="recommendation-info">
               <h4>{{ item.name }}</h4>
