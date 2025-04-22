@@ -110,37 +110,37 @@ export default {
                 {
                     icon: 'el-icon-wallet',
                     index: 'OrdersList',
-                    title: '订单管理',
+                    title: '我的订单',
                     role: '02'
                 },
                 {
                     icon: 'el-icon-chat-line-square',
                     index: 'ReviewList',
-                    title: '商品评论管理',
+                    title: '我发布的商品评论',
                     role: '02'
                 },
                 {
                     icon: 'el-icon-present',
                     index: 'OutfitList',
-                    title: '穿搭信息管理',
+                    title: '我分享的穿搭',
                     role: '02'
                 },
                 {
                     icon: 'el-icon-chat-dot-round',
                     index: 'DiscussList',
-                    title: '穿搭评论管理',
+                    title: '我针对穿搭的评论',
                     role: '02'
                 },
                 {
                     icon: 'el-icon-connection',
                     index: 'ForumList',
-                    title: '帖子管理',
+                    title: '我分享的帖子',
                     role: '02'
                 },
                 {
                     icon: 'el-icon-chat-round',
                     index: 'CommentList',
-                    title: '我的帖子',
+                    title: '我针对帖子的留言',
                     role: '02'
                 },
                 {
