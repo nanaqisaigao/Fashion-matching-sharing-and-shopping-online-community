@@ -80,6 +80,10 @@
         <el-form-item label="名称" prop="name">
             <el-input v-model="form.name" placeholder="名称"></el-input>
         </el-form-item>
+        <el-form-item label="关联商品" prop="productIds">
+            <el-button type="primary" @click="showProductDialog = true">选择商品</el-button>
+            <span v-if="form.productIds">已选商品ID: {{ form.productIds }}</span>
+        </el-form-item>
         <el-form-item label="浏览量" prop="num">
             <el-input type='number' oninput="if(value<0)value=0" v-model="form.num" placeholder="浏览量"></el-input>
         </el-form-item>
@@ -97,6 +101,31 @@
         <el-button @click="dialogVisible = false">取 消</el-button>
         <el-button type="primary" @click="save('ruleForm')">确 定</el-button>
       </span>
+    </el-dialog>
+
+    <!-- 商品选择弹窗 -->
+    <el-dialog title="选择商品" :visible.sync="showProductDialog" width="80%">
+        <div class="products-grid">
+            <div v-for="product in products" :key="product.id" class="product-card" @click="toggleProductSelection(product.id)">
+                <div class="product-image">
+                    <img :src="product.image" :alt="product.name">
+                </div>
+                <div class="product-info">
+                    <h3 class="product-name">{{ product.name }}</h3>
+                    <p class="product-desc">{{ product.remark }}</p>
+                    <div class="product-meta">
+                        <span class="price">¥{{ product.money }}</span>
+                    </div>
+                </div>
+                <div class="product-selection" v-if="selectedProducts.includes(product.id)">
+                    <i class="el-icon-check"></i>
+                </div>
+            </div>
+        </div>
+        <div slot="footer" class="dialog-footer">
+            <el-button @click="showProductDialog = false">取消</el-button>
+            <el-button type="primary" @click="confirmSelection">确定</el-button>
+        </div>
     </el-dialog>
 
 
@@ -126,6 +155,9 @@ export default {
              }
        };
     return {
+        showProductDialog: false,
+        products: [],
+        selectedProducts: [],
         query: {},
         dialogName: '', 
         tableData: [],    // 所有的数据
@@ -135,7 +167,9 @@ export default {
         imageUrl: null,
         fileUrl: null,
         dialogVisible: false,
-        form: {},
+        form: {
+            productIds: ''
+        },
         rules: {
           image: [
               { required: true, message: '请输入图片', trigger: 'blur' },
@@ -191,6 +225,7 @@ export default {
     };
   },
   created() {
+      this.fetchProducts();
       this.type = this.common.get('type');
       this.userInfo = this.common.getUserInfo('userInfo');
       if(this.userInfo===null){
@@ -199,6 +234,26 @@ export default {
       this.getData();
   },
   methods: {
+    toggleProductSelection(id) {
+        const index = this.selectedProducts.indexOf(id);
+        if (index === -1) {
+            this.selectedProducts.push(id);
+        } else {
+            this.selectedProducts.splice(index, 1);
+        }
+    },
+    confirmSelection() {
+        this.form.productIds = JSON.stringify(this.selectedProducts);
+        this.showProductDialog = false;
+    },
+    fetchProducts() {
+        this.$axios.post('/api/goods/frontPage', {
+            currentPage: 1,
+            pagesize: 100,
+        }).then(res => {
+            this.products = res.data.data.list;
+        });
+    },
     queryuser(){
         this.userList = [];
         this.$axios.post('/api/user/queryAll',{}).then(res => {

@@ -15,6 +15,7 @@
         outfit.num,
         outfit.status,
         outfit.create_time createTime,
+        outfit.product_ids productIds,
         user.realname realname,
         user.image userImage,
         (select count(1) from discuss where discuss.oid = outfit.id) comments
@@ -139,7 +140,8 @@
           uid,
           num,
           status,
-          create_time
+          create_time,
+          product_ids
         )values( 
           #{id},
           #{image},
@@ -150,7 +152,8 @@
           #{uid},
           #{num},
           #{status},
-          #{createTime}
+          #{createTime},
+          #{productIds}
         )
     </insert>
 
@@ -184,6 +187,9 @@
           </if>
           <if test="status != null">
               status = #{status},
+          </if>
+          <if test="productIds != null">
+              product_ids = #{productIds},
           </if>
         </set>
         where id = #{id} 

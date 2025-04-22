@@ -35,7 +35,17 @@ public class Outfit implements Serializable {
     private String userImage;
     private List<Discuss> discusses;
     private Integer comments;
+    /** 关联商品ID列表 */
+    private String productIds;
 
+
+    public String getProductIds() {
+        return productIds;
+    }
+
+    public void setProductIds(String productIds) {
+        this.productIds = productIds;
+    }
 
     public Integer getComments() {
         return comments;
