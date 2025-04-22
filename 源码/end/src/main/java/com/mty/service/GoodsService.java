@@ -37,6 +37,13 @@ public class GoodsService {
     }
 
     /**
+     * 根据ID列表查询商品详情
+     */
+    public List<Goods> queryByIds(List<Integer> ids) {
+        return goodsMapper.queryByIds(ids);
+    }
+
+    /**
      * 新增
      */
     public int insert(Goods goods) {

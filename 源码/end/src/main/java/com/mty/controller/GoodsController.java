@@ -136,4 +136,14 @@ public class GoodsController {
         return Result.success(list);
     }
 
+    /**
+     * 根据商品ID列表获取商品详情
+     */
+    @PostMapping("/listByIds")
+    public Result listByIds(@RequestBody Map<String, List<Integer>> request) {
+        List<Integer> ids = request.get("ids");
+        List<Goods> goodsList = goodsService.queryByIds(ids);
+        return Result.success(goodsList);
+    }
+
 }

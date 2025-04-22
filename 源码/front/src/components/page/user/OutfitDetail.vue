@@ -30,7 +30,19 @@
             <p v-html="outfitDetail.content"></p>
           </div>
 
-          
+          <!-- 关联商品展示区 -->
+          <div class="items-section" v-if="relatedProducts.length > 0">
+            <h3>关联商品</h3>
+            <div class="items-grid">
+              <div v-for="product in relatedProducts" :key="product.id" class="item-card">
+                <img :src="product.image" :alt="product.name">
+                <div class="item-info">
+                  <h4>{{ product.name }}</h4>
+                  <p class="price">¥{{ product.money }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- 评论区 -->
@@ -95,9 +107,10 @@ export default {
       newComment: '',
       outfitDetail: {},
       recommendations: [],
-      type:'',
-      userInfo:{},
-      id:'',
+      relatedProducts: [],
+      type: '',
+      userInfo: {},
+      id: ''
     }
   },
   created() {
@@ -148,8 +161,14 @@ export default {
     },
     // 添加获取详情数据的方法
     fetchOutfitDetail() {
-        this.$axios.get('/api/outfit/frontOne?id='+this.id).then(res => {
+        this.$axios.get('/api/outfit/frontOne?id=' + this.id).then(res => {
             this.outfitDetail = res.data.data;
+            if (this.outfitDetail.productIds) {
+              const productIds = JSON.parse(this.outfitDetail.productIds);
+              this.$axios.post('/api/goods/listByIds', { ids: productIds }).then(res => {
+                this.relatedProducts = res.data.data || [];
+              });
+            }
         });
     },
      // 添加获取详情数据的方法
