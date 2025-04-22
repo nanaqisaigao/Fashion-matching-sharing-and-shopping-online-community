@@ -1,5 +1,5 @@
 <template>
-  <div class="outfit-container">
+  <div>
     <!-- 筛选栏 -->
     <div class="filter-section">
       <el-select v-model="filter.style" placeholder="风格" size="small" @change="handlePageChange(1)">
@@ -15,10 +15,21 @@
         <el-option label="秋季" value="秋季"></el-option>
         <el-option label="冬季" value="冬季"></el-option>
       </el-select>
+      <el-button type="primary" size="small" @click="shareOutfit">分享穿搭</el-button>
+      <el-button type="info" size="small" @click="viewMyShares">查看我的分享</el-button>
     </div>
 
+    <!-- 引用公共组件 -->
+    <outfit-form-dialog
+      :dialog-title="'分享穿搭'"
+      :dialog-visible="dialogVisible"
+      :form-data="form"
+      @submit="saveOutfit"
+      @update:dialog-visible="dialogVisible = $event"
+    ></outfit-form-dialog>
+
     <!-- 穿搭列表 -->
-    <div class="outfit-grid">
+    <div class="outfits-list">
       <div v-for="outfit in outfits" :key="outfit.id" class="outfit-card" @click="viewDetail(outfit.id)">
         <div class="outfit-image">
           <img :src="outfit.image" :alt="outfit.name">
@@ -37,23 +48,17 @@
         </div>
       </div>
     </div>
-
-    <!-- 分页 -->
-    <div class="pagination">
-      <el-pagination
-        background
-        layout="prev, pager, next"
-        :total="total"
-        :current-page.sync="currentPage"
-        @current-change="handlePageChange">
-      </el-pagination>
-    </div>
   </div>
 </template>
 
 <script>
+import OutfitFormDialog from '@/components/common/OutfitFormDialog.vue';
+
 export default {
   name: 'OutfitSharing',
+  components: {
+    OutfitFormDialog
+  },
   data() {
     return {
       filter: {
@@ -63,8 +68,21 @@ export default {
       sortBy: 'newest',
       currentPage: 1,
       outfits: [],
-      total:0,
-    }
+      total: 0,
+      dialogVisible: false,
+      form: {
+        productIds: '[]',
+        status: '已发布',
+        num: 0,
+        uid: ''
+      },
+      userInfo: {}
+    };
+  },
+  created() {
+    this.userInfo = this.common.getUserInfo('userInfo');
+    this.form.uid = this.userInfo.id;
+    this.getData();
   },
   filters: { 
     filtersText1(val) {
@@ -84,10 +102,22 @@ export default {
       } else return '';
     }
   },
-  mounted(){
-    this.handlePageChange(1);
-  },
   methods: {
+    shareOutfit() {
+      this.dialogVisible = true;
+    },
+    saveOutfit(formData) {
+      this.$axios.post('/api/outfit/add', formData).then(res => {
+        if (res.data.code === 200) {
+          this.$message.success(res.data.msg);
+          this.dialogVisible = false;
+          this.getData();
+        }
+      });
+    },
+    viewMyShares() {
+      this.$router.push('/admin/OutfitList');
+    },
     handlePageChange(page) {
       this.currentPage = page
       var param = {
@@ -109,7 +139,7 @@ export default {
       })
     }
   }
-}
+};
 </script>
 
 <style scoped>
@@ -203,4 +233,4 @@ export default {
   justify-content: center;
   margin-top: 30px;
 }
-</style> 
+</style>

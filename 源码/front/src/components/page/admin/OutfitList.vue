@@ -52,56 +52,14 @@
       </div>
     </div>
 
-    <!-- 弹出框 -->
-    <el-dialog :title="dialogName" :visible.sync="dialogVisible" width="55%">
-        <el-form ref="ruleForm" :model="form" :rules="rules" label-width="90px">
-        <el-form-item label="图片" prop="image">
-            <el-upload class="avatar-uploader" action="mty" :show-file-list="false" :http-request="httpRequest">
-                 <img v-if="imageUrl" :src="imageUrl" class="avatar">
-                 <i v-else class="el-icon-plus avatar-uploader-icon"></i>
-            </el-upload>
-            <el-input type="hidden" v-model="form.image"></el-input>
-        </el-form-item>
-        <el-form-item label="类型" prop="type">
-            <el-select v-model="form.type" clearable placeholder="类型">
-            <el-option label="休闲" value="休闲"></el-option>
-            <el-option label="商务" value="商务"></el-option>
-            <el-option label="运动" value="运动"></el-option>
-            </el-select>
-        </el-form-item>
-        <el-form-item label="季节" prop="season">
-            <el-select v-model="form.season" clearable placeholder="季节">
-            <el-option label="春季" value="春季"></el-option>
-            <el-option label="夏季" value="夏季"></el-option>
-            <el-option label="秋季" value="秋季"></el-option>
-            <el-option label="冬季" value="冬季"></el-option>
-            </el-select>
-        </el-form-item>
-        <el-form-item label="名称" prop="name">
-            <el-input v-model="form.name" placeholder="名称"></el-input>
-        </el-form-item>
-        <el-form-item label="关联商品" prop="productIds">
-            <el-button type="primary" @click="showProductDialog = true">选择商品</el-button>
-            <span v-if="form.productIds">已选商品ID: {{ form.productIds }}</span>
-        </el-form-item>
-        <el-form-item label="浏览量" prop="num">
-            <el-input type='number' oninput="if(value<0)value=0" v-model="form.num" placeholder="浏览量"></el-input>
-        </el-form-item>
-        <el-form-item label="状态" prop="status">
-            <el-select v-model="form.status" clearable placeholder="状态">
-            <el-option label="已发布" value="已发布"></el-option>
-            <el-option label="已撤回" value="已撤回"></el-option>
-            </el-select>
-        </el-form-item>
-         <el-card style="height: 610px;">
-            <quill-editor v-model="form.content" ref="myQuillEditor" style="height: 500px;" :options="editorOption"></quill-editor>
-         </el-card>
-      </el-form>
-       <span slot="footer" class="dialog-footer">
-        <el-button @click="dialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="save('ruleForm')">确 定</el-button>
-      </span>
-    </el-dialog>
+    <!-- 引用公共组件 -->
+    <outfit-form-dialog
+      :dialog-title="dialogName"
+      :dialog-visible="dialogVisible"
+      :form-data="form"
+      @submit="handleSubmit"
+      @update:dialog-visible="dialogVisible = $event"
+    ></outfit-form-dialog>
 
     <!-- 商品选择弹窗 -->
     <el-dialog title="选择商品" :visible.sync="showProductDialog" width="80%">
@@ -140,116 +98,56 @@
 
   </div>
 </template>
+
 <script>
-import { quillEditor,Quill} from 'vue-quill-editor'
-import { container, ImageExtend, QuillWatch } from "quill-image-super-solution-module";
-Quill.register("modules/ImageExtend", ImageExtend);
-import 'quill/dist/quill.core.css'
-import 'quill/dist/quill.snow.css'
-import 'quill/dist/quill.bubble.css'
-import { isIntNumer } from '../../../utils/checkForm'
+import OutfitFormDialog from '@/components/common/OutfitFormDialog.vue';
+
 export default {
   name: "Outfit",
   components: {
-     quillEditor
+    OutfitFormDialog
   },
   data() {
-      var validateIntNumber = (rule, value, callback) => {
-             if(!value){
-                callback();
-             } else if (!isIntNumer(value)) {
-                callback(new Error("请输入整数"));
-             } else {
-                callback();
-             }
-       };
     return {
-        showProductDialog: false,
-        products: [],
-        selectedProducts: [],
-        currentPage: 1,
-        query: {},
-        dialogName: '', 
-        tableData: [],    // 所有的数据
-        pagesize: 10,     // 每页显示的个数
-        totalCount: 0,    // 总条数
-        imageUrl: null,
-        fileUrl: null,
-        dialogVisible: false,
-        form: {
-            productIds: '[]'
-        },
-        rules: {
-          image: [
-              { required: true, message: '请输入图片', trigger: 'blur' },
-          ],
-          type: [
-              { required: true, message: '请输入类型', trigger: 'blur' },
-          ],
-          season: [
-              { required: true, message: '请输入季节', trigger: 'blur' },
-          ],
-          name: [
-              { required: true, message: '请输入名称', trigger: 'blur' },
-          ],
-          content: [
-              { required: true, message: '请输入内容', trigger: 'blur' },
-          ],
-          uid: [
-              { required: true, message: '请输入发布人', trigger: 'blur' },
-          ],
-          num: [
-              { required: true, message: '请输入浏览量', trigger: 'blur' },
-              { validator: validateIntNumber, trigger: 'blur'},
-          ],
-          status: [
-              { required: true, message: '请输入状态', trigger: 'blur' },
-          ],
-        },
-        // 富文本框参数设置开始
-        editorOption: {
-           modules: {
-              ImageExtend: {
-                  // 图片参数名
-                  name: "file",
-                  action: "/api/file/imgUpload",
-                  accept: "image/jpg, image/png, image/gif, image/jpeg, image/bmp, image/x-icon",
-                  response: (res) => {
-                     return res.url;
-                  }
-              },
-              toolbar: {
-                  container: container,
-                  handlers: {
-                      image: function() {
-                           QuillWatch.emit(this.quill.id);
-                      },
-                   },
-               },
-           },
-         },
-        userList:[],
-        type:'',
-        userInfo:{},
+      showProductDialog: false,
+      products: [],
+      selectedProducts: [],
+      currentPage: 1,
+      query: {},
+      dialogName: '',
+      tableData: [],
+      pagesize: 10,
+      totalCount: 0,
+      dialogVisible: false,
+      form: {
+        productIds: '[]'
+      },
+      type: '',
+      userInfo: {}
     };
   },
-  computed: {
-    paginatedProducts() {
-        const start = (this.currentPage - 1) * 5;
-        const end = start + 5;
-        return this.products.slice(start, end);
-    }
-  },
-  created() {
-      this.fetchProducts();
-      this.type = this.common.get('type');
-      this.userInfo = this.common.getUserInfo('userInfo');
-      if(this.userInfo===null){
-         this.$router.push('/');
-      }
-      this.getData();
-  },
   methods: {
+    handleAdd() {
+      this.dialogName = "穿搭信息新增";
+      this.form = {
+        productIds: '[]',
+        status: '已发布',
+        num: 0,
+        uid: this.userInfo.id
+      };
+      this.dialogVisible = true;
+    },
+    handleSubmit(formData) {
+      this.$axios.post(formData.id ? '/api/outfit/edit' : '/api/outfit/add', formData).then(res => {
+        if (res.data.code == 200) {
+          this.$message.success(res.data.msg);
+          this.dialogVisible = false;
+          this.getData();
+        } else {
+          this.$message.warning(res.data.msg);
+        }
+      });
+    },
     handlePageChange(page) {
         this.currentPage = page;
     },
@@ -279,45 +177,6 @@ export default {
             this.$message.error('请求商品列表失败：' + error.message);
         });
     },
-    queryuser(){
-        this.userList = [];
-        this.$axios.post('/api/user/queryAll',{}).then(res => {
-            for(var i in res.data.data){
-               this.userList.push({id:res.data.data[i].id+'',name:res.data.data[i].realname});
-            }
-         });
-     },
-    //实现图片上传功能
-    httpRequest(item) {
-        const isJPG = item.file.type == 'image/jpeg' || item.file.type == 'image/png' || item.file.type == 'image/jpg';
-        const isLt2M = item.file.size / 1024 / 1024 < 2;
-        if (!isJPG) {
-             this.$message.error('上传图片只能是 JPG 或 PNG 格式!');
-        }
-        if (!isLt2M) {
-             this.$message.error('上传图片大小不能超过 2MB!');
-        }
-        //图片格式大小信息没问题 执行上传图片的方法
-        if (isJPG && isLt2M == true) {
-            let App = this;
-            let mf = new FormData();
-            mf.append('file', item.file);
-            this.$axios.post('/api/file/imgUpload',mf).then(res => {
-                  if (res.data.result == "true") {
-                      this.$message.success({
-                          title: '温馨提示：',
-                          message: res.data.message,
-                      });
-                      //将临时文件路径赋值给显示图片路径（前端显示的图片）
-                      App.imageUrl =res.data.imgUrl;
-                      //将后台传来的数据库图片路径赋值给对象的图片路径
-                      App.form.image = res.data.imgUrl;
-                  } else {
-                      this.$message.error({title: '温馨提示：',message: res.data.message});
-                  }
-              });
-          }
-     },
     //每页显示数据量变更
     handleSizeChange: function(val) {
         this.pagesize = val;
@@ -331,7 +190,7 @@ export default {
     //数据来源
     getData() {
         var param = {
-            name: this.query.name, 
+            name: this.query.name,
             uid: this.type==='02'?this.userInfo.id:'',
             pagesize: this.pagesize,  //每页显示的记录数
             currentPage: this.currentPage, //页码
@@ -348,44 +207,9 @@ export default {
     // 编辑操作
     handleEdit(index, row) {
         this.form = JSON.parse(JSON.stringify(row));
-        this.imageUrl = row.image;
-        this.queryuser();
         this.form.uid = this.form.uid+'';
         this.dialogVisible = true;   // 打开弹窗
-        this.$refs['ruleForm'].clearValidate();
         this.dialogName = "穿搭信息编辑";
-    },
-    // 新增操作
-    handleAdd() {
-        if (this.$refs.rulform !== undefined) this.$refs.rulform.resetFields();
-        this.dialogVisible = true;   // 打开弹窗
-        this.imageUrl = '';
-        this.queryuser();
-        this.form = {};
-        this.form.uid = this.userInfo.id;
-        this.form.status = '已发布';
-        this.form.num = 0;
-        this.$refs['ruleForm'].clearValidate();
-        this.dialogName = "穿搭信息新增";
-    },
-    // 保存操作，更新或新增调用
-    save(formName) {
-        this.$refs[formName].validate((valid) => {
-          if (valid) {
-            this.$axios.post(this.form.id?'/api/outfit/edit' : '/api/outfit/add', this.form).then(res => {
-              if(res.data.code == 200){  // 表示成功
-                this.$message.success(res.data.msg);
-                this.dialogVisible = false;
-                this.getData();
-              } else {
-                this.$message.warning(res.data.msg);  //错误信息
-              }
-            })
-          } else {
-            console.log('error submit!!');
-            return false;
-          }
-        });
     },
     // 删除操作
     handleDelete(index, row) {
@@ -405,7 +229,7 @@ export default {
         })
     },
   }
-}
+};
 </script>
 
 <style scoped>
