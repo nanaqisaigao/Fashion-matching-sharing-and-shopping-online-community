@@ -62,51 +62,83 @@ export default {
                     icon: 'el-icon-box',
                     index: 'GoodsList',
                     title: '商品管理',
-                    role: '01'
+                    role: '01',
+                    subs: [
+                        {
+                            index: 'GoodsList',
+                            title: '商品管理'
+                        },
+                        {
+                            index: 'ReviewList',
+                            title: '商品评论管理'
+                        }
+                    ]
                 },
                 {
                     icon: 'el-icon-wallet',
                     index: 'OrdersList',
                     title: '订单管理',
-                    role: '01'
+                    role: '01',
+                    subs: [
+                        {
+                            index: 'OrdersList',
+                            title: '订单管理'
+                        },
+                        {
+                            index: 'OrdersStats',
+                            title: '订单统计'
+                        }
+                    ]
                 },
-                {
-                    icon: 'el-icon-chat-line-square',
-                    index: 'ReviewList',
-                    title: '商品评论管理',
-                    role: '01'
-                },
+                // {
+                //     icon: 'el-icon-chat-line-square',
+                //     index: 'ReviewList',
+                //     title: '商品评论管理',
+                //     role: '01'
+                // },
                 {
                     icon: 'el-icon-present',
                     index: 'OutfitList',
                     title: '穿搭信息管理',
-                    role: '01'
-                },
-                {
-                    icon: 'el-icon-chat-dot-round',
-                    index: 'DiscussList',
-                    title: '穿搭评论管理',
-                    role: '01'
+                    role: '01',
+                    subs: [
+                        {
+                            index: 'OutfitList',
+                            title: '穿搭信息管理'
+                        },
+                        {
+                            icon: 'el-icon-chat-dot-round',
+                            index: 'DiscussList',
+                            title: '穿搭评论管理',
+                        },
+                        {
+                            index: 'OutfitStats',
+                            title: '穿搭信息统计'
+                        }
+                    ]
                 },
                 {
                     icon: 'el-icon-connection',
                     index: 'ForumList',
                     title: '帖子管理',
-                    role: '01'
+                    role: '01',
+                    subs: [
+                        {
+                            index: 'ForumList',
+                            title: '帖子管理'
+                        },
+                        {
+                            icon: 'el-icon-chat-round',
+                            index: 'CommentList',
+                            title: '帖子评论管理',
+                        },
+                        {
+                            icon: 'el-icon-star-off',
+                            index: 'StarsList',
+                            title: '收藏管理',
+                        }
+                    ]
                 },
-                {
-                    icon: 'el-icon-chat-round',
-                    index: 'CommentList',
-                    title: '帖子评论管理',
-                    role: '01'
-                },
-                {
-                    icon: 'el-icon-star-off',
-                    index: 'StarsList',
-                    title: '收藏管理',
-                    role: '01'
-                },
-
                 {
                     icon: 'el-icon-wallet',
                     index: 'OrdersList',
@@ -128,7 +160,7 @@ export default {
                 {
                     icon: 'el-icon-chat-dot-round',
                     index: 'DiscussList',
-                    title: '我针对穿搭的评论',
+                    title: '我对穿搭的评论',
                     role: '02'
                 },
                 {
@@ -140,7 +172,7 @@ export default {
                 {
                     icon: 'el-icon-chat-round',
                     index: 'CommentList',
-                    title: '我针对帖子的留言',
+                    title: '我对帖子的留言',
                     role: '02'
                 },
                 {

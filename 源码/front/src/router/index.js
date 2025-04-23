@@ -80,6 +80,16 @@ export default new Router({
                     meta: {title: '商品评论管理'}
                 },
                 {
+                    path: '/admin/OrdersStats',
+                    component: () => import('../components/page/admin/OrdersStats.vue'),
+                    meta: {title: '订单统计'}
+                },
+                {
+                    path: '/admin/OutfitStats',
+                    component: () => import('../components/page/admin/OutfitStats.vue'),
+                    meta: {title: '穿搭信息统计'}
+                },
+                {
                     path: '/admin/*',
                     redirect: '/404'
                 }
