@@ -15,6 +15,123 @@ body {
   height: 100%;
 }
 
+/* 修复按钮点击后出现竖杠的问题 - 增强版 */
+button, 
+[role="button"],
+.el-button,
+.el-button--primary,
+.el-button--text,
+.el-button--default,
+.nav-menu,
+.el-menu-item,
+.el-submenu__title,
+.el-dropdown,
+.el-dropdown-menu__item,
+.el-select-dropdown__item,
+a,
+.user-info,
+.username,
+.el-icon-*,
+[class^="el-icon-"],
+.logo,
+.logo-text,
+.header-right,
+.right-section {
+  outline: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  cursor: pointer !important;
+  position: relative !important;
+}
+
+.el-button:focus,
+.el-button:active,
+.el-button--primary:focus,
+.el-button--primary:active,
+button:focus,
+button:active,
+[role="button"]:focus,
+[role="button"]:active,
+a:focus,
+a:active,
+.el-menu-item:focus,
+.el-menu-item:active,
+.nav-menu:focus,
+.nav-menu:active {
+  outline: none !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+/* 禁止文本选择 */
+.el-button span,
+button span,
+[role="button"] span,
+.el-dropdown span,
+.el-menu-item span,
+.el-submenu__title span,
+.user-info span,
+.logo span,
+a span {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  pointer-events: none !important;
+}
+
+/* 消除Chrome和Safari中的文本选择和光标问题 */
+.el-button::after,
+button::after,
+[role="button"]::after,
+.el-menu-item::after,
+.el-submenu__title::after,
+.el-dropdown::after,
+a::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: transparent;
+  pointer-events: none;
+}
+
+/* 全局禁用文本选择效果 */
+.no-select {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+}
+
+/* 应用到更多元素 */
+.header, 
+.sidebar, 
+.nav-menu, 
+.el-menu, 
+.el-dropdown-menu,
+.el-select-dropdown,
+.el-dialog__title,
+.el-dialog__header,
+.el-form-item__label,
+.el-card__header,
+.el-tabs__item,
+.el-pagination,
+.el-pagination button,
+.el-pagination .el-input,
+.el-table th {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
 /* 滚动条样式优化 */
 ::-webkit-scrollbar {
   width: 8px;

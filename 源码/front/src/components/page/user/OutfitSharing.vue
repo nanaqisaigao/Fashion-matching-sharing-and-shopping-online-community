@@ -15,8 +15,8 @@
         <el-option label="秋季" value="秋季"></el-option>
         <el-option label="冬季" value="冬季"></el-option>
       </el-select>
-      <el-button type="primary" size="small" @click="shareOutfit">分享穿搭</el-button>
-      <el-button type="info" size="small" @click="viewMyShares">查看我的分享</el-button>
+      <el-button type="primary" size="small" @click="shareOutfit" v-if="isLoggedIn && userType === '02'">分享穿搭</el-button>
+      <el-button type="info" size="small" @click="viewMyShares" v-if="isLoggedIn && userType === '02'">查看我的分享</el-button>
     </div>
 
     <!-- 引用公共组件 -->
@@ -28,8 +28,11 @@
       @update:dialog-visible="dialogVisible = $event"
     ></outfit-form-dialog>
 
+    <!-- 空状态提示 -->
+    <el-empty v-if="outfits.length === 0" description="暂无穿搭分享" style="margin-top: 50px;"></el-empty>
+
     <!-- 穿搭列表 -->
-    <div class="outfit-grid">
+    <div class="outfit-grid" v-else>
       <div v-for="outfit in outfits" :key="outfit.id" class="outfit-card" @click="viewDetail(outfit.id)">
         <div class="outfit-image">
           <img :src="outfit.image" :alt="outfit.name">
@@ -87,12 +90,27 @@ export default {
         num: 0,
         uid: ''
       },
-      userInfo: {}
+      userInfo: null,
+      isLoggedIn: false,
+      userType: ''
     };
   },
   created() {
-    this.userInfo = this.common.getUserInfo('userInfo');
-    this.form.uid = this.userInfo.id;
+    // 检查用户是否登录
+    const token = this.common.cache.get('token') || this.common.get('token');
+    this.isLoggedIn = token ? true : false;
+    
+    // 获取用户类型
+    this.userType = this.common.cache.get('type') || this.common.get('type');
+    
+    // 获取用户信息
+    if (this.isLoggedIn) {
+      this.userInfo = this.common.cache.get('userInfo') || this.common.getUserInfo('userInfo');
+      if (this.userInfo) {
+        this.form.uid = this.userInfo.id;
+      }
+    }
+    
     this.handlePageChange(1);
   },
   filters: { 
@@ -115,9 +133,30 @@ export default {
   },
   methods: {
     shareOutfit() {
+      if (!this.isLoggedIn) {
+        this.$confirm('您需要登录才能分享穿搭, 是否立即登录?', '提示', {
+          confirmButtonText: '去登录',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.$router.push('/userlogin');
+        }).catch(() => {});
+        return;
+      }
+      
+      if (this.userType !== '02') {
+        this.$message.warning('管理员不能分享穿搭');
+        return;
+      }
+      
       this.dialogVisible = true;
     },
     saveOutfit(formData) {
+      if (!this.isLoggedIn) {
+        this.$message.warning('请先登录');
+        return;
+      }
+      
       this.$axios.post('/api/outfit/add', formData).then(res => {
         if (res.data.code === 200) {
           this.$message.success(res.data.msg);
@@ -127,6 +166,22 @@ export default {
       });
     },
     viewMyShares() {
+      if (!this.isLoggedIn) {
+        this.$confirm('您需要登录才能查看您的分享, 是否立即登录?', '提示', {
+          confirmButtonText: '去登录',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.$router.push('/userlogin');
+        }).catch(() => {});
+        return;
+      }
+      
+      if (this.userType !== '02') {
+        this.$message.warning('管理员没有分享穿搭功能');
+        return;
+      }
+      
       this.$router.push('/admin/OutfitList');
     },
     handlePageChange(page) {

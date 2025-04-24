@@ -6,6 +6,37 @@
     <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no">
     <link rel="stylesheet" href="//at.alicdn.com/t/font_830376_qzecyukz0s.css">
     <title></title>
+    <!-- 添加全局样式，解决光标和文本选择问题 -->
+    <style>
+      /* 全局禁用光标和文本选择 */
+      button, 
+      [role="button"], 
+      a, 
+      .el-button, 
+      .el-menu-item, 
+      .nav-item,
+      .el-dropdown,
+      .el-dropdown-item,
+      .el-icon-*,
+      [class^="el-icon-"] {
+        -webkit-tap-highlight-color: transparent !important;
+        -webkit-user-select: none !important;
+        -moz-user-select: none !important;
+        -ms-user-select: none !important;
+        user-select: none !important;
+        outline: none !important;
+      }
+      
+      /* 消除焦点时的轮廓 */
+      *:focus {
+        outline: none !important;
+      }
+      
+      /* 禁用文本插入光标 */
+      .el-button, button, a, [role="button"] {
+        caret-color: transparent !important;
+      }
+    </style>
   </head>
   <body>
     <noscript>

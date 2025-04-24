@@ -47,7 +47,7 @@
 
         <!-- 评论区 -->
         <div class="comments-section">
-          <h3>评论 ({{ outfitDetail.discusses.length }})</h3>
+          <h3>评论 ({{ outfitDetail.discusses ? outfitDetail.discusses.length : 0 }})</h3>
           <!-- 评论输入框 -->
           <div class="comment-input">
             <el-input
@@ -57,7 +57,7 @@
               v-model="newComment">
             </el-input>
             <el-button type="primary" @click="submitComment" :disabled="!newComment.trim()">
-              发表评论
+              {{ isLoggedIn ? '发表评论' : '请先登录' }}
             </el-button>
           </div>
           <!-- 评论列表 -->
@@ -108,13 +108,22 @@ export default {
       recommendations: [],
       relatedProducts: [],
       type: '',
-      userInfo: {},
+      userInfo: null,
+      isLoggedIn: false,
       id: ''
     }
   },
   created() {
-    this.userInfo = this.common.getUserInfo('userInfo');
-    this.type = this.common.get("type");
+    // 检查用户是否登录
+    const token = this.common.cache.get('token') || this.common.get('token');
+    this.isLoggedIn = token ? true : false;
+    
+    // 获取用户类型和信息
+    if (this.isLoggedIn) {
+      this.type = this.common.cache.get('type') || this.common.get('type');
+      this.userInfo = this.common.cache.get('userInfo') || this.common.getUserInfo('userInfo');
+    }
+    
     this.id = this.$route.params.id
     this.fetchOutfitDetail();
     this.recomment();
@@ -132,20 +141,26 @@ export default {
           this.$message.warning('请输入评论内容')
           return
         }
-        if (!this.userInfo) {
+        
+        if (!this.isLoggedIn) {
+          this.$confirm('您需要登录才能发表评论, 是否立即登录?', '提示', {
+            confirmButtonText: '去登录',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            this.$router.push('/userlogin');
+          }).catch(() => {});
+          return;
+        }
+        
+        if (this.type !== '02') {
           this.$message({
-            message: "请登录系统",
+            message: "管理员不能发表评论",
             type: "warning"
           });
           return;
         }
-        if (this.type!=null && this.type!='02') {
-          this.$message({
-            message: "请登录用户",
-            type: "warning"
-          });
-          return;
-        }
+        
         // 提交评论
         const comment = {
           oid: this.id,

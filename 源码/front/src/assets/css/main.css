@@ -20,6 +20,28 @@ a {
     text-decoration: none
 }
 
+/* 禁用按钮文本选择和修复按钮点击后的竖杠问题 */
+.el-button,
+button, 
+[role="button"] {
+    user-select: none !important;
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    -ms-user-select: none !important;
+    -webkit-tap-highlight-color: rgba(0,0,0,0) !important;
+}
+
+/* 禁用点击后出现的文本框 */
+input,
+button, 
+textarea,
+:focus {
+    outline: none !important;
+}
+
+* {
+    -webkit-tap-highlight-color: transparent !important;
+}
 
 .content-box {
     position: absolute;

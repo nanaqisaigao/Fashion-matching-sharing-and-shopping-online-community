@@ -8,4 +8,66 @@
     @import "./assets/css/main.css";
     @import "./assets/css/color-dark.css"; /*深色主题*/
     /*@import "./assets/css/theme-green/color-green.css";   !*浅绿色主题*!*/
+    
+    /* 全局禁用按钮文本选择和点击后出现的竖杠 */
+    .el-button, 
+    button,
+    [role="button"],
+    a,
+    .el-menu-item,
+    .el-submenu__title,
+    .el-dropdown,
+    .el-dropdown-menu__item,
+    .nav-item,
+    .el-tabs__item,
+    .el-pagination-button,
+    .el-select,
+    .el-radio,
+    .el-checkbox,
+    .el-switch,
+    .el-card__header,
+    [class^="el-icon-"] {
+        user-select: none !important;
+        -webkit-user-select: none !important;
+        -moz-user-select: none !important;
+        -ms-user-select: none !important;
+        -webkit-tap-highlight-color: transparent !important;
+        outline: none !important;
+    }
+    
+    /* 阻止点击后出现的焦点指示器 */
+    *:focus {
+        outline: none !important;
+    }
+    
+    /* 阻止所有可交互元素出现光标 */
+    [role="button"],
+    a,
+    button,
+    .el-button,
+    .el-menu-item,
+    .el-submenu__title,
+    .el-dropdown,
+    .el-dropdown-menu__item,
+    .el-select-dropdown__item {
+        caret-color: transparent !important;
+    }
+    
+    /* 对Element UI组件应用不可选择文本样式 */
+    .el-main,
+    .el-header,
+    .el-footer,
+    .el-aside,
+    .el-menu,
+    .el-dropdown-menu,
+    .el-select-dropdown,
+    .el-dialog__header,
+    .el-tabs__header,
+    .el-form-item__label,
+    .el-card__header {
+        user-select: none !important;
+        -webkit-user-select: none !important;
+        -moz-user-select: none !important;
+        -ms-user-select: none !important;
+    }
 </style>

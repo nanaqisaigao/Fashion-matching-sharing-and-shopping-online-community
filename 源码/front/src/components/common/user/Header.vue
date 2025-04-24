@@ -305,4 +305,26 @@ export default {
   margin: 5px 0;
   padding-top: 12px;
 }
+
+/* 禁用按钮文本选择 */
+button,
+.el-button,
+.el-button--text,
+.el-dropdown {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+/* 禁用用户信息部分的文本选择 */
+.user-info,
+.username,
+.user-section {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+}
 </style> 
