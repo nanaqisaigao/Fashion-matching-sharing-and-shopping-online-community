@@ -98,6 +98,18 @@
           </el-card>
         </el-col>
       </el-row>
+      
+      <!-- 新增：关联商品分析 -->
+      <el-row :gutter="20" class="mgb20">
+        <el-col :span="24">
+          <el-card shadow="hover" class="chart-card">
+            <div class="chart-header">
+              <span>关联商品统计分析</span>
+            </div>
+            <div id="relatedProductsChart" style="width: 100%; height: 300px;"></div>
+          </el-card>
+        </el-col>
+      </el-row>
     </div>
   </div>
 </template>
@@ -115,7 +127,9 @@ export default {
       seasonData: [],
       trendData: {},
       popularOutfits: [],
-      topUsers: []
+      topUsers: [],
+      relatedProductsData: [],
+      allProducts: []
     };
   },
   created() {
@@ -129,133 +143,190 @@ export default {
   },
   methods: {
     getOutfitStats() {
-      // 获取穿搭统计数据
-      this.$axios.post('/api/outfit/selectPage', {
-        pagesize: 9999,
+      // 首先获取所有商品数据
+      this.$axios.post('/api/goods/frontPage', {
+        pagesize: 1000,
         currentPage: 1
-      }).then(res => {
-        if (res.data.code == 200) {
-          // 使用真实穿搭数据生成统计信息
-          const outfitsList = res.data.data.list || [];
+      }).then(goodsRes => {
+        if (goodsRes.data.code == 200) {
+          this.allProducts = goodsRes.data.data.list || [];
           
-          // 设置穿搭总数
-          this.totalCount = outfitsList.length;
-          
-          // 计算总浏览量
-          let totalViews = 0;
-          
-          // 类型统计
-          const typeMap = {};
-          
-          // 季节统计
-          const seasonMap = {};
-          
-          // 日期统计
-          const dateMap = {};
-          
-          // 用户统计
-          const userMap = {};
-          
-          // 热门穿搭统计
-          const popularOutfitsMap = {};
-          
-          outfitsList.forEach(outfit => {
-            // 累计浏览量
-            if (outfit.num) {
-              totalViews += parseInt(outfit.num);
-            }
-            
-            // 按类型分类
-            if (outfit.type) {
-              typeMap[outfit.type] = (typeMap[outfit.type] || 0) + 1;
-            }
-            
-            // 按季节分类
-            if (outfit.season) {
-              seasonMap[outfit.season] = (seasonMap[outfit.season] || 0) + 1;
-            }
-            
-            // 按日期统计发布量
-            if (outfit.createTime) {
-              // 提取日期部分 (YYYY-MM-DD)
-              const dateStr = outfit.createTime.split(' ')[0];
-              dateMap[dateStr] = (dateMap[dateStr] || 0) + 1;
-            }
-            
-            // 统计用户发布数量
-            if (outfit.realname) {
-              userMap[outfit.realname] = (userMap[outfit.realname] || 0) + 1;
-            }
-            
-            // 热门穿搭
-            if (outfit.name && outfit.num) {
-              popularOutfitsMap[outfit.name] = parseInt(outfit.num);
-            }
-          });
-          
-          // 获取穿搭评论数据来统计评论总数
-          this.$axios.post('/api/discuss/selectPage', {
+          // 然后获取穿搭统计数据
+          this.$axios.post('/api/outfit/selectPage', {
             pagesize: 9999,
             currentPage: 1
-          }).then(discussRes => {
-            if (discussRes.data.code == 200 && discussRes.data.data) {
-              // 评论总数
-              this.totalComments = discussRes.data.data.total || discussRes.data.data.list.length || 0;
+          }).then(res => {
+            if (res.data.code == 200) {
+              // 使用真实穿搭数据生成统计信息
+              const outfitsList = res.data.data.list || [];
+              
+              // 设置穿搭总数
+              this.totalCount = outfitsList.length;
+              
+              // 计算总浏览量
+              let totalViews = 0;
+              
+              // 类型统计
+              const typeMap = {};
+              
+              // 季节统计
+              const seasonMap = {};
+              
+              // 日期统计
+              const dateMap = {};
+              
+              // 用户统计
+              const userMap = {};
+              
+              // 热门穿搭统计
+              const popularOutfitsMap = {};
+              
+              // 新增：关联商品统计
+              const productRelationMap = {}; // 商品ID -> 被关联次数
+              const productViewsMap = {}; // 商品ID -> 累计浏览量
+              
+              outfitsList.forEach(outfit => {
+                // 累计浏览量
+                if (outfit.num) {
+                  totalViews += parseInt(outfit.num);
+                }
+                
+                // 按类型分类
+                if (outfit.type) {
+                  typeMap[outfit.type] = (typeMap[outfit.type] || 0) + 1;
+                }
+                
+                // 按季节分类
+                if (outfit.season) {
+                  seasonMap[outfit.season] = (seasonMap[outfit.season] || 0) + 1;
+                }
+                
+                // 按日期统计发布量
+                if (outfit.createTime) {
+                  // 提取日期部分 (YYYY-MM-DD)
+                  const dateStr = outfit.createTime.split(' ')[0];
+                  dateMap[dateStr] = (dateMap[dateStr] || 0) + 1;
+                }
+                
+                // 统计用户发布数量
+                if (outfit.realname) {
+                  userMap[outfit.realname] = (userMap[outfit.realname] || 0) + 1;
+                }
+                
+                // 热门穿搭
+                if (outfit.name && outfit.num) {
+                  popularOutfitsMap[outfit.name] = parseInt(outfit.num);
+                }
+                
+                // 新增：统计关联商品数据
+                if (outfit.productIds && outfit.productIds !== '[]') {
+                  try {
+                    const productIds = JSON.parse(outfit.productIds);
+                    const outfitViews = parseInt(outfit.num) || 0;
+                    
+                    productIds.forEach(productId => {
+                      // 增加商品被关联次数
+                      productRelationMap[productId] = (productRelationMap[productId] || 0) + 1;
+                      
+                      // 累计关联穿搭的浏览量
+                      productViewsMap[productId] = (productViewsMap[productId] || 0) + outfitViews;
+                    });
+                  } catch (e) {
+                    console.error('解析商品ID失败:', e);
+                  }
+                }
+              });
+              
+              // 获取穿搭评论数据来统计评论总数
+              this.$axios.post('/api/discuss/selectPage', {
+                pagesize: 9999,
+                currentPage: 1
+              }).then(discussRes => {
+                if (discussRes.data.code == 200 && discussRes.data.data) {
+                  // 评论总数
+                  this.totalComments = discussRes.data.data.total || discussRes.data.data.list.length || 0;
+                } else {
+                  this.totalComments = 0;
+                }
+                
+                // 设置活跃用户数
+                this.activeUsers = Object.keys(userMap).length;
+                
+                // 设置总浏览量
+                this.totalViews = totalViews;
+                
+                // 设置类型分布数据
+                this.typeData = Object.entries(typeMap)
+                  .map(([name, value]) => ({ name, value }))
+                  .sort((a, b) => b.value - a.value);
+                
+                // 设置季节分布数据
+                this.seasonData = Object.entries(seasonMap)
+                  .map(([name, value]) => ({ name, value }));
+                
+                // 设置日期趋势数据
+                const sortedDates = Object.keys(dateMap).sort();
+                const last7Dates = sortedDates.slice(-7); // 最近7天
+                
+                this.trendData = {
+                  dates: last7Dates.map(date => date.substring(5)), // 只显示MM-DD
+                  outfits: last7Dates.map(date => dateMap[date])
+                };
+                
+                // 设置热门穿搭排行
+                this.popularOutfits = Object.entries(popularOutfitsMap)
+                  .map(([name, value]) => ({ name, value }))
+                  .sort((a, b) => b.value - a.value)
+                  .slice(0, 5);
+                
+                // 设置用户排行
+                this.topUsers = Object.entries(userMap)
+                  .map(([name, value]) => ({ name, value }))
+                  .sort((a, b) => b.value - a.value)
+                  .slice(0, 5);
+                
+                // 新增：设置关联商品数据
+                // 将商品ID转换为商品名称，并按关联次数排序
+                const productEntries = Object.entries(productRelationMap);
+                const sortedProducts = productEntries
+                  .sort((a, b) => b[1] - a[1])
+                  .slice(0, 10); // 取前10个最多关联的商品
+                
+                this.relatedProductsData = sortedProducts.map(([productId, count]) => {
+                  const product = this.allProducts.find(p => p.id === productId) || {};
+                  const views = productViewsMap[productId] || 0;
+                  return {
+                    productId,
+                    name: product.name || `商品${productId}`,
+                    relationCount: count,
+                    views: views,
+                    price: product.money || 0
+                  };
+                });
+                
+                // 数据加载完成后初始化图表
+                this.$nextTick(() => {
+                  this.initCharts();
+                });
+              }).catch(() => {
+                this.$message.warning('获取评论数据失败，部分统计可能不准确');
+                this.totalComments = 0;
+                this.initBaseCharts();
+              });
             } else {
-              this.totalComments = 0;
+              this.$message.warning(res.data.msg);
+              this.generateMinimalMockData();
             }
-            
-            // 设置活跃用户数
-            this.activeUsers = Object.keys(userMap).length;
-            
-            // 设置总浏览量
-            this.totalViews = totalViews;
-            
-            // 设置类型分布数据
-            this.typeData = Object.entries(typeMap)
-              .map(([name, value]) => ({ name, value }))
-              .sort((a, b) => b.value - a.value);
-            
-            // 设置季节分布数据
-            this.seasonData = Object.entries(seasonMap)
-              .map(([name, value]) => ({ name, value }));
-            
-            // 设置日期趋势数据
-            const sortedDates = Object.keys(dateMap).sort();
-            const last7Dates = sortedDates.slice(-7); // 最近7天
-            
-            this.trendData = {
-              dates: last7Dates.map(date => date.substring(5)), // 只显示MM-DD
-              outfits: last7Dates.map(date => dateMap[date])
-            };
-            
-            // 设置热门穿搭排行
-            this.popularOutfits = Object.entries(popularOutfitsMap)
-              .map(([name, value]) => ({ name, value }))
-              .sort((a, b) => b.value - a.value)
-              .slice(0, 5);
-            
-            // 设置用户排行
-            this.topUsers = Object.entries(userMap)
-              .map(([name, value]) => ({ name, value }))
-              .sort((a, b) => b.value - a.value)
-              .slice(0, 5);
-            
-            // 数据加载完成后初始化图表
-            this.$nextTick(() => {
-              this.initCharts();
-            });
           }).catch(() => {
-            this.$message.warning('获取评论数据失败，部分统计可能不准确');
-            this.totalComments = 0;
-            this.initBaseCharts();
+            this.$message.warning('获取穿搭数据失败，使用模拟数据');
+            this.generateMinimalMockData();
           });
         } else {
-          this.$message.warning(res.data.msg);
+          this.$message.warning(goodsRes.data.msg);
           this.generateMinimalMockData();
         }
       }).catch(() => {
-        this.$message.warning('获取穿搭数据失败，使用模拟数据');
+        this.$message.warning('获取商品数据失败，使用模拟数据');
         this.generateMinimalMockData();
       });
     },
@@ -321,6 +392,7 @@ export default {
       this.initTrendChart();
       this.initPopularOutfitsChart();
       this.initActiveUsersChart();
+      this.initRelatedProductsChart();
     },
     
     initTypeChart() {
@@ -544,12 +616,118 @@ export default {
       this.activeUsersChart = activeUsersChart;
     },
     
+    initRelatedProductsChart() {
+      const relatedProductsChart = this.$echarts.init(document.getElementById('relatedProductsChart'));
+      
+      // 提取数据
+      const productNames = this.relatedProductsData.map(item => item.name);
+      const relationCounts = this.relatedProductsData.map(item => item.relationCount);
+      const viewsCounts = this.relatedProductsData.map(item => item.views);
+      
+      const option = {
+        tooltip: {
+          trigger: 'axis',
+          axisPointer: {
+            type: 'shadow'
+          },
+          formatter: function(params) {
+            const item = params[0];
+            const dataIndex = item.dataIndex;
+            const product = this.relatedProductsData[dataIndex];
+            return `
+              <div>
+                <b>${product.name}</b><br/>
+                关联次数: ${product.relationCount}<br/>
+                累计浏览量: ${product.views}<br/>
+                商品价格: ¥${product.price}
+              </div>
+            `;
+          }.bind(this)
+        },
+        legend: {
+          data: ['关联次数', '累计浏览量'],
+          right: 10,
+          top: 0
+        },
+        grid: {
+          left: '3%',
+          right: '4%',
+          bottom: '3%',
+          containLabel: true
+        },
+        xAxis: [
+          {
+            type: 'value',
+            name: '次数',
+            position: 'bottom',
+            axisLine: {
+              show: true
+            },
+            axisLabel: {
+              formatter: '{value}'
+            }
+          }
+        ],
+        yAxis: [
+          {
+            type: 'category',
+            inverse: true,
+            data: productNames,
+            axisLine: {
+              show: true
+            },
+            axisTick: {
+              show: false
+            },
+            axisLabel: {
+              formatter: function(value) {
+                if (value.length > 10) {
+                  return value.substring(0, 10) + '...';
+                }
+                return value;
+              }
+            }
+          }
+        ],
+        series: [
+          {
+            name: '关联次数',
+            type: 'bar',
+            data: relationCounts,
+            itemStyle: {
+              color: '#f3c3cc'
+            },
+            label: {
+              show: true,
+              position: 'right'
+            }
+          },
+          {
+            name: '累计浏览量',
+            type: 'bar',
+            data: viewsCounts,
+            itemStyle: {
+              color: '#95ddb2'
+            },
+            label: {
+              show: true,
+              position: 'right'
+            }
+          }
+        ]
+      };
+      
+      relatedProductsChart.setOption(option);
+      this.relatedProductsChart = relatedProductsChart;
+    },
+    
     resizeCharts() {
       this.typeChart && this.typeChart.resize();
       this.seasonChart && this.seasonChart.resize();
       this.trendChart && this.trendChart.resize();
       this.popularOutfitsChart && this.popularOutfitsChart.resize();
       this.activeUsersChart && this.activeUsersChart.resize();
+      this.relatedProductsChart && this.relatedProductsChart.resize();
     }
   }
 };

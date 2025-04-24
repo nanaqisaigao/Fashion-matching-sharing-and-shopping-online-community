@@ -1,4 +1,3 @@
-
 <template>
   <div class="forum-container">
     <!-- 顶部操作区 -->
@@ -20,6 +19,8 @@
           class="search-input">
           <el-button slot="append" icon="el-icon-search" @click="handleSearch">搜索</el-button>
         </el-input>
+        <el-button type="primary" icon="el-icon-plus" class="add-button" @click="addPost" v-if="type === '02'">发布帖子</el-button>
+        <el-button type="info" icon="el-icon-document" class="my-posts-button" @click="viewMyPosts" v-if="type === '02'">我的帖子</el-button>
       </div>
     </div>
 
@@ -271,6 +272,38 @@ export default {
           this.$message.warning(res.data.msg);
         }
       });
+    },
+    addPost() {
+      if (!this.userInfo) {
+        this.$message.warning('请先登录');
+        return;
+      }
+      
+      // 使用与管理端相同的数据结构
+      const form = {
+        uid: this.userInfo.id
+      };
+      
+      // 打开一个对话框用于发帖
+      this.$confirm('即将跳转到发布帖子页面，是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'info'
+      }).then(() => {
+        // 跳转到管理端的帖子编辑页面
+        this.$router.push('/admin/ForumList');
+      }).catch(() => {
+        // 用户取消操作
+      });
+    },
+    viewMyPosts() {
+      if (!this.userInfo) {
+        this.$message.warning('请先登录');
+        return;
+      }
+      
+      // 跳转到管理端的帖子管理页面
+      this.$router.push('/admin/ForumList');
     }
   }
 }
@@ -559,6 +592,11 @@ export default {
 
 .search-input {
   width: 300px;
+  margin-right: 10px;
+}
+
+.add-button, .my-posts-button {
+  margin-left: 10px;
 }
 
 /* 热门帖子样式 */

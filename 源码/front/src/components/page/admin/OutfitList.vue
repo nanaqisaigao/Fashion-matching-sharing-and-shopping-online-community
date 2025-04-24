@@ -24,6 +24,35 @@
         </el-table-column>
         <el-table-column prop="realname" label="用户" align="center"></el-table-column>
         <el-table-column prop="num" label="浏览量" align="center"></el-table-column>
+        <el-table-column prop="productIds" label="关联商品" align="center">
+          <template slot-scope="scope">
+            <el-popover
+              placement="right"
+              width="300"
+              trigger="hover">
+              <div class="products-popover">
+                <div v-if="scope.row.productIds && scope.row.productIds !== '[]'">
+                  <div v-for="product in getRelatedProducts(scope.row.productIds)" :key="product.id" class="product-item">
+                    <img :src="product.image" class="product-image">
+                    <div class="product-info">
+                      <div class="product-name">{{ product.name }}</div>
+                      <div class="product-price">¥{{ product.money }}</div>
+                    </div>
+                  </div>
+                  <div v-if="getRelatedProducts(scope.row.productIds).length === 0" class="no-product">
+                    加载中...
+                  </div>
+                </div>
+                <div v-else class="no-product">
+                  无关联商品
+                </div>
+              </div>
+              <el-button slot="reference" size="mini" type="text">
+                {{ getRelatedProductsCount(scope.row.productIds) }} 个商品
+              </el-button>
+            </el-popover>
+          </template>
+        </el-table-column>
         <el-table-column prop="status" label="状态" align="center">
             <template slot-scope="scope">
                 <el-button  type="success" size="mini" v-if="scope.row.status == '已发布'">已发布</el-button>
@@ -130,6 +159,7 @@ export default {
     this.userInfo = this.common.getUserInfo('userInfo');
     this.type = this.common.get('type');
     this.getData();
+    this.fetchAllProducts();
   },
   methods: {
     handleAdd() {
@@ -168,19 +198,19 @@ export default {
         this.form.productIds = JSON.stringify(this.selectedProducts);
         this.showProductDialog = false;
     },
-    fetchProducts() {
-        this.$axios.post('/api/goods/frontPage', {
-            currentPage: 1,
-            pagesize: 100,
-        }).then(res => {
-            if (res.data && res.data.code === 200) {
-                this.products = res.data.data.list || [];
-            } else {
-                this.$message.error(res.data.msg || '获取商品列表失败');
-            }
-        }).catch(error => {
-            this.$message.error('请求商品列表失败：' + error.message);
-        });
+    fetchAllProducts() {
+      this.$axios.post('/api/goods/frontPage', {
+        currentPage: 1,
+        pagesize: 1000 // 获取尽可能多的商品
+      }).then(res => {
+        if (res.data && res.data.code === 200) {
+          this.products = res.data.data.list || [];
+        } else {
+          this.$message.error(res.data.msg || '获取商品列表失败');
+        }
+      }).catch(error => {
+        this.$message.error('请求商品列表失败：' + error.message);
+      });
     },
     //每页显示数据量变更
     handleSizeChange: function(val) {
@@ -232,6 +262,32 @@ export default {
           });
         }).catch(() => {
         })
+    },
+    getRelatedProducts(productIdsString) {
+      if (!productIdsString || productIdsString === '[]' || this.products.length === 0) {
+        return [];
+      }
+      
+      try {
+        const productIds = JSON.parse(productIdsString);
+        return this.products.filter(product => productIds.includes(product.id));
+      } catch (e) {
+        console.error('解析商品ID失败:', e);
+        return [];
+      }
+    },
+    getRelatedProductsCount(productIdsString) {
+      if (!productIdsString || productIdsString === '[]') {
+        return 0;
+      }
+      
+      try {
+        const productIds = JSON.parse(productIdsString);
+        return productIds.length;
+      } catch (e) {
+        console.error('解析商品ID失败:', e);
+        return 0;
+      }
     },
   }
 };
@@ -303,5 +359,53 @@ export default {
          height: 100px;
          display: block;
      }
-
+     
+    /* 关联商品样式 */
+    .products-popover {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    
+    .product-item {
+      display: flex;
+      margin-bottom: 10px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #ebeef5;
+    }
+    
+    .product-item:last-child {
+      margin-bottom: 0;
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+    
+    .product-image {
+      width: 50px;
+      height: 50px;
+      object-fit: cover;
+      margin-right: 10px;
+      border-radius: 4px;
+    }
+    
+    .product-info {
+      flex: 1;
+    }
+    
+    .product-name {
+      font-size: 14px;
+      margin-bottom: 5px;
+      color: #303133;
+    }
+    
+    .product-price {
+      color: #f56c6c;
+      font-weight: bold;
+    }
+    
+    .no-product {
+      color: #909399;
+      text-align: center;
+      font-style: italic;
+      padding: 10px;
+    }
 </style>

@@ -248,6 +248,7 @@
             handleCommand(command) {
                 if (command == 'loginout') {
                     localStorage.clear();
+                    this.common.cache.clearAll();
                     this.$router.push('/');
                 }
                 if (command == 'query') {
@@ -274,6 +275,11 @@
                                 localStorage.removeItem("token");
                                 this.common.set('userInfo',JSON.stringify(res.data.data));
                                 this.common.set('token',res.data.data.token);
+                                
+                                // 同时更新内存缓存
+                                this.common.cache.set('userInfo', JSON.parse(JSON.stringify(res.data.data)));
+                                this.common.cache.set('token', res.data.data.token);
+                                
                                 this.eformVisible = false;
                             }else{
                                 this.$message.warning(res.msg);

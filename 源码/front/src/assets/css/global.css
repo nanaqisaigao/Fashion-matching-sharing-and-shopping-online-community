@@ -38,4 +38,83 @@ body {
 .el-menu {
   border-bottom: none !important;
 }
+
+/* 全局样式优化 */
+
+/* 优化图片加载 */
+img {
+  content-visibility: auto;
+}
+
+/* 提升过渡流畅度 */
+.el-table,
+.el-dialog,
+.el-form,
+.el-card {
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+/* 减少重绘和回流 */
+.el-table__body-wrapper,
+.el-scrollbar__wrap {
+  overflow: auto;
+  contain: content;
+}
+
+/* 避免不必要的渲染阻塞 */
+.el-loading-mask {
+  will-change: opacity;
+}
+
+/* 优化滚动性能 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(144, 147, 153, 0.3);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* 移动端优化 */
+@media (max-width: 768px) {
+  html {
+    font-size: 14px;
+  }
+  
+  .el-dialog {
+    width: 95% !important;
+    margin-top: 10vh !important;
+  }
+  
+  .el-form-item {
+    margin-bottom: 18px;
+  }
+}
+
+/* 懒加载过渡效果 */
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.3s;
+}
+
+.fade-enter, .fade-leave-to {
+  opacity: 0;
+}
+
+/* 提升数据量大的表格性能 */
+.el-table__body {
+  table-layout: fixed;
+}
+
+/* 全局动画性能优化 */
+* {
+  transition-duration: 0.15s;
+  transition-timing-function: ease-out;
+}
  

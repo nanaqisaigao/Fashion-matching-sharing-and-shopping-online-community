@@ -143,7 +143,8 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        localStorage.clear;
+        localStorage.clear();
+        this.common.cache.clearAll();
         this.isLoggedIn = false
         this.$message.success('已退出登录')
         this.$router.push('/')

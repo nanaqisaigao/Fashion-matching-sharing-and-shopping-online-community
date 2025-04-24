@@ -28,7 +28,21 @@
       </el-form-item>
       <el-form-item label="关联商品" prop="productIds">
         <el-button type="primary" @click="showProductDialog = true">选择商品</el-button>
-        <span v-if="formData.productIds">已选商品ID: {{ formData.productIds }}</span>
+        <div v-if="formData.productIds && formData.productIds !== '[]'" class="selected-products">
+          <h4>已选商品:</h4>
+          <div class="selected-products-list">
+            <div v-for="product in displayProducts" :key="product.id" class="selected-product-item">
+              <img :src="product.image" :alt="product.name" class="product-thumbnail">
+              <div class="product-detail">
+                <div class="product-name">{{ product.name }}</div>
+                <div class="product-price">¥{{ product.money }}</div>
+              </div>
+            </div>
+            <div v-if="displayProducts.length === 0" class="no-products">
+              加载关联商品中...
+            </div>
+          </div>
+        </div>
       </el-form-item>
       <el-form-item label="浏览量" prop="num">
         <el-input type='number' oninput="if(value<0)value=0" v-model="formData.num" placeholder="浏览量"></el-input>
@@ -132,6 +146,7 @@ export default {
       showProductDialog: false,
       products: [],
       selectedProducts: [],
+      displayProducts: [],
       currentPage: 1,
       imageUrl: null,
       rules: {
@@ -204,6 +219,7 @@ export default {
     },
     confirmSelection() {
       this.formData.productIds = JSON.stringify(this.selectedProducts);
+      this.loadSelectedProductDetails();
       this.showProductDialog = false;
     },
     fetchProducts() {
@@ -213,12 +229,54 @@ export default {
       }).then(res => {
         if (res.data && res.data.code === 200) {
           this.products = res.data.data.list || [];
+          this.loadSelectedProductDetails();
         } else {
           this.$message.error(res.data.msg || '获取商品列表失败');
         }
       }).catch(error => {
         this.$message.error('请求商品列表失败：' + error.message);
       });
+    },
+    loadSelectedProductDetails() {
+      if (this.formData.productIds && this.formData.productIds !== '[]') {
+        try {
+          const selectedIds = JSON.parse(this.formData.productIds);
+          this.selectedProducts = selectedIds;
+          
+          if (this.products.length > 0) {
+            this.displayProducts = this.products.filter(product => 
+              selectedIds.includes(product.id)
+            );
+          } else {
+            this.loadProductsByIds(selectedIds);
+          }
+        } catch (e) {
+          console.error('解析已选商品ID失败:', e);
+          this.displayProducts = [];
+        }
+      } else {
+        this.displayProducts = [];
+        this.selectedProducts = [];
+      }
+    },
+    loadProductsByIds(productIds) {
+      if (!productIds || productIds.length === 0) return;
+      
+      const promises = productIds.map(id => 
+        this.$axios.get(`/api/goods/getById?id=${id}`)
+      );
+      
+      Promise.all(promises)
+        .then(responses => {
+          const validProducts = responses
+            .filter(res => res.data && res.data.code === 200)
+            .map(res => res.data.data);
+          
+          this.displayProducts = validProducts;
+        })
+        .catch(error => {
+          console.error('获取商品详情失败:', error);
+        });
     },
     handleUpload(item) {
       const isJPG = item.file.type == 'image/jpeg' || item.file.type == 'image/png' || item.file.type == 'image/jpg';
@@ -254,6 +312,18 @@ export default {
   },
   created() {
     this.fetchProducts();
+    this.loadSelectedProductDetails();
+  },
+  watch: {
+    'formData.productIds': function(newVal) {
+      this.loadSelectedProductDetails();
+    },
+    dialogVisible: function(newVal) {
+      if (newVal) {
+        this.loadSelectedProductDetails();
+        this.imageUrl = this.formData.image;
+      }
+    }
   }
 };
 </script>
@@ -330,5 +400,80 @@ export default {
   top: 5px;
   right: 5px;
   color: #67c23a;
+}
+
+/* 已选商品样式 */
+.selected-products {
+  margin-top: 10px;
+  border: 1px solid #ebeef5;
+  border-radius: 4px;
+  padding: 10px;
+}
+
+.selected-products h4 {
+  margin: 0 0 10px 0;
+  color: #606266;
+}
+
+.selected-products-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.selected-product-item {
+  display: flex;
+  align-items: center;
+  width: calc(50% - 15px);
+  padding: 8px;
+  border: 1px solid #ebeef5;
+  border-radius: 4px;
+  transition: all 0.3s;
+}
+
+.selected-product-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+}
+
+.product-thumbnail {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 4px;
+  margin-right: 10px;
+}
+
+.product-detail {
+  flex: 1;
+}
+
+.product-name {
+  font-size: 14px;
+  margin-bottom: 4px;
+  color: #303133;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.product-price {
+  font-size: 14px;
+  color: #f56c6c;
+  font-weight: bold;
+}
+
+.no-products {
+  width: 100%;
+  padding: 10px;
+  color: #909399;
+  text-align: center;
+  font-style: italic;
+}
+
+@media (max-width: 768px) {
+  .selected-product-item {
+    width: 100%;
+  }
 }
 </style>

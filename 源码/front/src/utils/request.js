@@ -22,7 +22,12 @@ service.interceptors.request.use(
 // 可以自请求发送前对请求做一些处理
 // 比如统一加token，对请求参数统一加密
 service.interceptors.request.use(config => {
-    let token = common.get('token');
+    // 优先从内存缓存中获取token
+    let token = common.cache.get('token') || common.get('token');
+    // 如果从localStorage获取到了token，同时更新到内存缓存中
+    if (token && !common.cache.get('token')) {
+        common.cache.set('token', token);
+    }
     if (token) {
         config.headers['token'] = token;  // 设置请求头
     }
@@ -38,6 +43,7 @@ service.interceptors.response.use(
         if (response.data && response.data.code === -1) { // token有问题
             vm.$message.error(response.data.msg);
             localStorage.clear();
+            common.cache.clearAll(); // 同时清除内存缓存
             router.push('/login');
             return response;
         }

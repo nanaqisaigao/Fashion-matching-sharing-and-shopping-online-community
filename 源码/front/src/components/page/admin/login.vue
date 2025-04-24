@@ -72,6 +72,11 @@
                                 this.common.set('userInfo',JSON.stringify(res.data.data));
                                 this.common.set('token',res.data.data.token);
                                 this.common.set('type',this.param.type);
+                                
+                                this.common.cache.set('userInfo', JSON.parse(JSON.stringify(res.data.data)));
+                                this.common.cache.set('token', res.data.data.token);
+                                this.common.cache.set('type', this.param.type);
+                                
                                 this.$router.push('/user/helloHome');
                             } else
                                 this.$message.error(res.data.msg);

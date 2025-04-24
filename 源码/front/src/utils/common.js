@@ -1,6 +1,50 @@
-export default {
+// 缓存优化：使用内存缓存来减少重复请求
+const memoryCache = {
+  data: {},
+  timeout: {},
+  
+  // 获取缓存数据
+  get(key) {
+    return this.data[key];
+  },
+  
+  // 设置缓存数据
+  set(key, value, expireSeconds = 300) { // 默认缓存5分钟
+    this.data[key] = value;
+    
+    // 清除旧的超时
+    if (this.timeout[key]) {
+      clearTimeout(this.timeout[key]);
+    }
+    
+    // 设置新的超时
+    this.timeout[key] = setTimeout(() => {
+      delete this.data[key];
+      delete this.timeout[key];
+    }, expireSeconds * 1000);
+  },
+  
+  // 清除指定缓存
+  clear(key) {
+    delete this.data[key];
+    if (this.timeout[key]) {
+      clearTimeout(this.timeout[key]);
+      delete this.timeout[key];
+    }
+  },
+  
+  // 清除所有缓存
+  clearAll() {
+    this.data = {};
+    Object.keys(this.timeout).forEach(key => {
+      clearTimeout(this.timeout[key]);
+    });
+    this.timeout = {};
+  }
+};
 
-
+// 原始common对象
+const common = {
     set(key,value){
         var curTime = new Date().getTime();
         localStorage.setItem(key,JSON.stringify({data:value,time:curTime}));
@@ -38,23 +82,17 @@ export default {
     },
 
     remove(key) {
-        const data = this.source,
-            value = data[key];
-        delete data[key];
-        delete data[`${key}__expires__`];
-        return value;
+        localStorage.removeItem(key);
     },
-
-
 
     initRun() {
         /*
-           * set 存储方法
-           * @ param {String} 	key 键
-           * @ param {String} 	value 值，存储的值可能是数组/对象，不能直接存储，需要转换 JSON.stringify
-           * @ param {String} 	expired 过期时间，以分钟为单位
-           * @ 由@IT·平头哥联盟-首席填坑官∙苏南 分享
-           */
+        * set 存储方法
+        * @ param {String} 	key 键
+        * @ param {String} 	value 值，存储的值可能是数组/对象，不能直接存储，需要转换 JSON.stringify
+        * @ param {String} 	expired 过期时间，以分钟为单位
+        * @ 由@IT·平头哥联盟-首席填坑官∙苏南 分享
+        */
         const reg = new RegExp("__expires__");
         let data = this.source;
         let list = Object.keys(data);
@@ -70,5 +108,11 @@ export default {
                 return key;
             });
         };
-    }
+    },
+    
+    // 添加内存缓存支持
+    cache: memoryCache
 }
+
+// 导出对象
+export default common;

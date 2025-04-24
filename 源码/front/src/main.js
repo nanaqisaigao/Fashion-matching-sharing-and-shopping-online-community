@@ -47,13 +47,27 @@ const i18n = new VueI18n({
 router.beforeEach((to, from, next) => {
     if (to.fullPath.indexOf('/admin/') >= 0) {
         document.title = `${to.meta.title}`;
-        const userInfo = common.getUserInfo('userInfo');
-        const type = common.get("type");
-        const token = common.get("token");
+        // 优先从内存缓存中获取数据
+        const userInfo = common.cache.get('userInfo') || common.getUserInfo('userInfo');
+        const type = common.cache.get('type') || common.get("type");
+        const token = common.cache.get('token') || common.get("token");
+        
+        // 如果从localStorage获取到了数据，同时更新到内存缓存中提高后续访问速度
+        if (userInfo && !common.cache.get('userInfo')) {
+            common.cache.set('userInfo', userInfo);
+        }
+        if (type && !common.cache.get('type')) {
+            common.cache.set('type', type);
+        }
+        if (token && !common.cache.get('token')) {
+            common.cache.set('token', token);
+        }
+        
         if (token!=null && userInfo!=null && type!=null) {
             next();
         } else {
-            localStorage.clear;
+            localStorage.clear();
+            common.cache.clearAll(); // 同时清除内存缓存
             next('/403');
         }
     }else {
