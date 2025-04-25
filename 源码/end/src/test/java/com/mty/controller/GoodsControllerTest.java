@@ -51,8 +51,8 @@ public class GoodsControllerTest {
     @Test
     public void testAdd() throws Exception {
         Goods goods = new Goods();
-        goods.setName("Test Product");
-        goods.setPrice(100.0);
+        goods.setName("Test Product");   
+        goods.setMoney("100");
 
         mockMvc.perform(MockMvcRequestBuilders.post("/goods/add")
                 .contentType(MediaType.APPLICATION_JSON)
