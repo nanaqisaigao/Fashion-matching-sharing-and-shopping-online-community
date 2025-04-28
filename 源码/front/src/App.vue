@@ -16,8 +16,6 @@
     a,
     .el-menu-item,
     .el-submenu__title,
-    .el-dropdown,
-    .el-dropdown-menu__item,
     .nav-item,
     .el-tabs__item,
     .el-pagination-button,
@@ -35,6 +33,17 @@
         outline: none !important;
     }
     
+    /* 下拉菜单修复 */
+    .el-dropdown {
+        cursor: pointer !important;
+        pointer-events: auto !important;
+    }
+    
+    .el-dropdown-menu__item {
+        cursor: pointer !important;
+        pointer-events: auto !important;
+    }
+    
     /* 阻止点击后出现的焦点指示器 */
     *:focus {
         outline: none !important;
@@ -47,8 +56,6 @@
     .el-button,
     .el-menu-item,
     .el-submenu__title,
-    .el-dropdown,
-    .el-dropdown-menu__item,
     .el-select-dropdown__item {
         caret-color: transparent !important;
     }
@@ -59,8 +66,6 @@
     .el-footer,
     .el-aside,
     .el-menu,
-    .el-dropdown-menu,
-    .el-select-dropdown,
     .el-dialog__header,
     .el-tabs__header,
     .el-form-item__label,

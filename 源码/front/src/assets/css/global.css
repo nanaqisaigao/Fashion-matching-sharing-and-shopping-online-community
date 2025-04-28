@@ -25,9 +25,6 @@ button,
 .nav-menu,
 .el-menu-item,
 .el-submenu__title,
-.el-dropdown,
-.el-dropdown-menu__item,
-.el-select-dropdown__item,
 a,
 .user-info,
 .username,
@@ -45,6 +42,22 @@ a,
   -ms-user-select: none !important;
   cursor: pointer !important;
   position: relative !important;
+}
+
+/* 修复下拉菜单问题 */
+.el-dropdown, 
+.el-dropdown-menu, 
+.el-dropdown-menu__item {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+/* 确保下拉菜单的点击事件不被阻止 */
+.el-dropdown-link,
+.el-dropdown span,
+.el-dropdown-menu__item,
+.el-dropdown-menu__item span {
+  pointer-events: auto !important;
 }
 
 .el-button:focus,
@@ -66,11 +79,10 @@ a:active,
   box-shadow: none !important;
 }
 
-/* 禁止文本选择 */
+/* 禁止文本选择 - 但排除下拉菜单元素 */
 .el-button span,
 button span,
 [role="button"] span,
-.el-dropdown span,
 .el-menu-item span,
 .el-submenu__title span,
 .user-info span,
@@ -80,7 +92,6 @@ a span {
   -webkit-user-select: none !important;
   -moz-user-select: none !important;
   -ms-user-select: none !important;
-  pointer-events: none !important;
 }
 
 /* 消除Chrome和Safari中的文本选择和光标问题 */
@@ -89,7 +100,6 @@ button::after,
 [role="button"]::after,
 .el-menu-item::after,
 .el-submenu__title::after,
-.el-dropdown::after,
 a::after {
   content: "";
   position: absolute;
@@ -109,13 +119,11 @@ a::after {
   -ms-user-select: none !important;
 }
 
-/* 应用到更多元素 */
+/* 应用到更多元素 - 排除下拉菜单相关元素 */
 .header, 
 .sidebar, 
 .nav-menu, 
 .el-menu, 
-.el-dropdown-menu,
-.el-select-dropdown,
 .el-dialog__title,
 .el-dialog__header,
 .el-form-item__label,

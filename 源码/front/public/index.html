@@ -8,15 +8,13 @@
     <title></title>
     <!-- 添加全局样式，解决光标和文本选择问题 -->
     <style>
-      /* 全局禁用光标和文本选择 */
+      /* 全局禁用光标和文本选择 - 修复下拉框问题 */
       button, 
       [role="button"], 
       a, 
-      .el-button, 
+      .el-button,
       .el-menu-item, 
       .nav-item,
-      .el-dropdown,
-      .el-dropdown-item,
       .el-icon-*,
       [class^="el-icon-"] {
         -webkit-tap-highlight-color: transparent !important;
@@ -27,12 +25,23 @@
         outline: none !important;
       }
       
+      /* 修复Element UI下拉菜单 */
+      .el-dropdown {
+        cursor: pointer !important;
+      }
+      
+      /* 确保下拉菜单项可点击 */
+      .el-dropdown-menu__item {
+        pointer-events: auto !important;
+        cursor: pointer !important;
+      }
+      
       /* 消除焦点时的轮廓 */
       *:focus {
         outline: none !important;
       }
       
-      /* 禁用文本插入光标 */
+      /* 禁用文本插入光标 - 但保留必要交互元素 */
       .el-button, button, a, [role="button"] {
         caret-color: transparent !important;
       }

@@ -349,6 +349,27 @@
         background-color: #f3c3cc;
     }
 
+    /* 修复下拉菜单问题 */
+    .el-dropdown, .user-name {
+        cursor: pointer !important;
+        pointer-events: auto !important;
+    }
+    
+    .el-dropdown-link {
+        color: #fff;
+        cursor: pointer;
+        padding: 10px;
+        display: inline-block;
+        pointer-events: auto !important;
+        user-select: none;
+    }
+    
+    /* 确保下拉菜单可点击 */
+    ::v-deep .el-dropdown-menu__item {
+        cursor: pointer !important;
+        pointer-events: auto !important;
+    }
+    
     .collapse-btn {
         float: left;
         padding: 0 21px;
@@ -407,10 +428,6 @@
         color: #fff;
     }
 
-    .user-name {
-        margin-left: 10px;
-    }
-
     .user-avator {
         margin-left: 20px;
     }
@@ -421,18 +438,6 @@
         height: 40px;
         border-radius: 50%;
     }
-
-    .el-dropdown-link {
-        color: #fff;
-        cursor: pointer;
-        padding: 10px;
-        display: inline-block;
-    }
-
-    .el-dropdown-menu__item {
-        text-align: center;
-    }
-
 
     .avatar-uploader .el-upload {
         border: 1px dashed #d9d9d9;
