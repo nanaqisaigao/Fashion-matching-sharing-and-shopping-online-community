@@ -425,6 +425,8 @@
     .el-dropdown-link {
         color: #fff;
         cursor: pointer;
+        padding: 10px;
+        display: inline-block;
     }
 
     .el-dropdown-menu__item {
