@@ -286,7 +286,7 @@ export default {
         remark: this.orderRemark
       }).then(res => {
         if (res.data.code === 200) {
-          this.$message.success('下单成功')
+          this.$message.success('下单成功，请前往个人中心“我的订单”进行支付')
           this.showCheckoutDialog = false
           this.orderRemark = ''
           this.handleChange()

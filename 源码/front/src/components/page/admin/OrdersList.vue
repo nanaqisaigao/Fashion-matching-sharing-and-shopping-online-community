@@ -89,11 +89,62 @@
         </el-table>
     </el-dialog>
 
+    <!-- 支付弹窗 -->
+    <el-dialog title="订单支付" :visible.sync="paymentDialogVisible" width="500px" center>
+      <div class="payment-dialog">
+        <div class="payment-amount">
+          <h2>支付金额</h2>
+          <div class="amount">¥ {{ paymentOrder.total }}</div>
+        </div>
+        
+        <div class="payment-methods">
+          <h3>请选择支付方式</h3>
+          <div class="methods-list">
+            <div 
+              v-for="method in paymentMethods" 
+              :key="method.id" 
+              class="payment-method-item" 
+              :class="{ 'selected': selectedPaymentMethod === method.id }"
+              @click="selectPaymentMethod(method.id)"
+            >
+              <img :src="method.icon" :alt="method.name">
+              <span>{{ method.name }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div v-if="showQRCode" class="qrcode-container">
+          <h3>请使用{{ getSelectedPaymentMethodName() }}扫码支付</h3>
+          <div class="qrcode">
+            <img :src="qrCodeImage" alt="支付二维码">
+          </div>
+          <p class="hint">扫描成功后将自动完成支付</p>
+          
+          <!-- 模拟支付过程 -->
+          <div class="mock-payment">
+            <el-button type="primary" @click="mockScanComplete">模拟扫码完成</el-button>
+          </div>
+        </div>
+        
+        <div class="payment-actions">
+          <el-button @click="paymentDialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="proceedToPayment" :disabled="!selectedPaymentMethod || showQRCode">
+            确认支付
+          </el-button>
+        </div>
+      </div>
+    </el-dialog>
 
   </div>
 </template>
 <script>
 import { isIntNumer,isMoney } from '../../../utils/checkForm'
+import alipayIcon from '@/assets/img/支付宝支付.png';
+import wechatIcon from '@/assets/img/微信.png';
+import unionpayIcon from '@/assets/img/银联.png';
+
+
+
 export default {
   name: "Orders",
   data() {
@@ -130,6 +181,19 @@ export default {
         userInfo:{},
         dialogTableVisible:false,
         orderItemData:[],
+        // 支付相关
+        paymentDialogVisible: false,
+        paymentOrder: {},
+        selectedPaymentMethod: null,
+        showQRCode: false,
+        paymentLoading: false,
+        qrCodeImage: 'https://t7.baidu.com/it/u=1819248061,230866778&fm=193&f=GIF',
+        paymentMethods: [
+          { id: 'alipay', name: '支付宝', icon: alipayIcon },
+          { id: 'wechat', name: '微信支付', icon: wechatIcon },
+          { id: 'unionpay', name: '银联支付', icon: unionpayIcon }
+        ],
+        paymentStatus: 'pending'
     };
   },
   created() {
@@ -226,21 +290,72 @@ export default {
         })
     },
      //支付
-    shenpi(row,status){
-        this.$confirm('是否支付？', '提示', {
-            type: 'warning'
+    shenpi(row, status) {
+      if (status === '02') {
+        // 显示支付弹窗
+        this.paymentOrder = row;
+        this.paymentDialogVisible = true;
+        this.selectedPaymentMethod = null;
+        this.showQRCode = false;
+        this.paymentStatus = 'pending';
+      } else {
+        // 其他状态的处理（发货/收货等）
+        this.$confirm('是否' + (status === '03' ? '发货' : '收货') + '？', '提示', {
+          type: 'warning'
         }).then(() => {
-            this.$axios.post('/api/orders/edit',{"id":row.id,"status": status}).then(res => {
-                if(res.data.code === 200){
-                    this.getData();
-                    this.$message.success("操作成功");
-                }else{
-                    this.$message.warning("操作失败");
-                }
-            });
-        }).catch(() => {
-        });
+          this.processOrderStatusChange(row, status);
+        }).catch(() => {});
+      }
     },
+    
+    // 选择支付方式
+    selectPaymentMethod(methodId) {
+      this.selectedPaymentMethod = methodId;
+    },
+    
+    // 获取选中的支付方式名称
+    getSelectedPaymentMethodName() {
+      const method = this.paymentMethods.find(m => m.id === this.selectedPaymentMethod);
+      return method ? method.name : '';
+    },
+    
+    // 进入支付流程
+    proceedToPayment() {
+      if (!this.selectedPaymentMethod) {
+        this.$message.warning('请选择支付方式');
+        return;
+      }
+      
+      this.showQRCode = true;
+    },
+    
+    // 模拟扫码完成
+    mockScanComplete() {
+      this.paymentLoading = true;
+      
+      // 模拟支付过程
+      setTimeout(() => {
+        this.paymentLoading = false;
+        this.paymentDialogVisible = false;
+        
+        // 更新订单状态
+        this.processOrderStatusChange(this.paymentOrder, '02');
+        
+        this.$message.success('支付成功');
+      }, 1500);
+    },
+    
+    // 处理订单状态变更
+    processOrderStatusChange(row, status) {
+      this.$axios.post('/api/orders/edit', {"id": row.id, "status": status}).then(res => {
+        if (res.data.code === 200) {
+          this.getData();
+          this.$message.success("操作成功");
+        } else {
+          this.$message.warning("操作失败");
+        }
+      });
+    }
   }
 }
 </script>
@@ -312,4 +427,117 @@ export default {
          display: block;
      }
 
+    /* 支付弹窗样式 */
+    .payment-dialog {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .payment-amount {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .payment-amount h2 {
+      font-size: 18px;
+      color: #303133;
+      margin-bottom: 15px;
+    }
+    
+    .payment-amount .amount {
+      font-size: 28px;
+      color: #f56c6c;
+      font-weight: bold;
+    }
+    
+    .payment-methods {
+      width: 100%;
+      margin-bottom: 30px;
+    }
+    
+    .payment-methods h3 {
+      font-size: 16px;
+      margin-bottom: 15px;
+      color: #606266;
+    }
+    
+    .methods-list {
+      display: flex;
+      justify-content: space-around;
+    }
+    
+    .payment-method-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 15px;
+      border: 1px solid #EBEEF5;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.3s;
+      width: 120px;
+    }
+    
+    .payment-method-item:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+    }
+    
+    .payment-method-item.selected {
+      border-color: #409EFF;
+      background-color: #ecf5ff;
+    }
+    
+    .payment-method-item img {
+      width: 40px;
+      height: 40px;
+      margin-bottom: 8px;
+    }
+    
+    .qrcode-container {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    
+    .qrcode-container h3 {
+      font-size: 16px;
+      margin-bottom: 15px;
+      color: #606266;
+    }
+    
+    .qrcode {
+      width: 200px;
+      height: 200px;
+      margin: 0 auto 15px;
+      border: 1px solid #EBEEF5;
+      padding: 5px;
+    }
+    
+    .qrcode img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    .hint {
+      color: #909399;
+      font-size: 14px;
+      margin-bottom: 15px;
+    }
+    
+    .mock-payment {
+      margin-top: 15px;
+    }
+    
+    .payment-actions {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+      width: 100%;
+    }
+    
+    .payment-actions button {
+      margin: 0 10px;
+    }
 </style>
