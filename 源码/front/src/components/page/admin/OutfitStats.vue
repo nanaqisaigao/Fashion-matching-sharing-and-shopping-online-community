@@ -292,9 +292,16 @@ export default {
                   .sort((a, b) => b[1] - a[1])
                   .slice(0, 10); // 取前10个最多关联的商品
                 
-                this.relatedProductsData = sortedProducts.map(([productId, count]) => {
-                  const product = this.allProducts.find(p => p.id === productId) || {};
+                  this.relatedProductsData = sortedProducts.map(([productId, count]) => {
+                  // 转换为字符串进行比较，确保类型匹配
+                  const product = this.allProducts.find(p => String(p.id) === String(productId)) || {};
                   const views = productViewsMap[productId] || 0;
+                  
+                  // 添加日志以便调试
+                  if (!product.name) {
+                    console.log('未找到商品:', productId, '可用商品IDs:', this.allProducts.map(p => p.id));
+                  }
+                  
                   return {
                     productId,
                     name: product.name || `商品${productId}`,
