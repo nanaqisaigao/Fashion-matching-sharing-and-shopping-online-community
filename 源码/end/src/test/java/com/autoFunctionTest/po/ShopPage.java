@@ -10,20 +10,32 @@ import java.util.List;
  * 商城页面对象类
  */
 public class ShopPage extends BasePage {
-    // 页面元素定位器
-    private By searchInput = By.cssSelector(".search-box input");
-    private By searchButton = By.cssSelector(".search-btn");
-    private By productItems = By.cssSelector(".product-item");
-    private By priceFilterDropdown = By.cssSelector(".price-filter .el-select");
-    private By categoryFilterItems = By.cssSelector(".category-list .category-item");
-    private By sortDropdown = By.cssSelector(".sort-dropdown");
-    private By pagination = By.cssSelector(".el-pagination");
-    private By addToCartButtons = By.cssSelector(".product-item .add-to-cart");
-    private By productNames = By.cssSelector(".product-item .product-name");
-    private By productPrices = By.cssSelector(".product-item .product-price");
+    // 页面元素定位器 - 从配置文件获取
+    private By searchInput;
+    private By searchButton;
+    private By productItems;
+    private By priceFilterDropdown;
+    private By categoryFilterItems;
+    private By sortDropdown;
+    private By pagination;
+    private By addToCartButtons;
+    private By productNames;
+    private By productPrices;
     
     public ShopPage(WebDriver driver) {
         super(driver);
+        
+        // 从配置文件中获取选择器
+        searchInput = By.cssSelector(config.getProperty("shop.search.input", ".search-input"));
+        searchButton = By.cssSelector(config.getProperty("shop.search.button", ".el-icon-search"));
+        productItems = By.cssSelector(config.getProperty("shop.product.items", ".goods-item"));
+        priceFilterDropdown = By.cssSelector(config.getProperty("shop.price.filter", ".el-select"));
+        categoryFilterItems = By.cssSelector(config.getProperty("shop.category.items", ".category-item"));
+        sortDropdown = By.cssSelector(config.getProperty("shop.sort.dropdown", ".sort-select .el-input"));
+        pagination = By.cssSelector(config.getProperty("shop.pagination", ".el-pagination"));
+        addToCartButtons = By.cssSelector(config.getProperty("shop.add.cart.button", ".goods-item .add-cart"));
+        productNames = By.cssSelector(config.getProperty("shop.product.name", ".goods-item .goods-title"));
+        productPrices = By.cssSelector(config.getProperty("shop.product.price", ".goods-item .goods-price"));
     }
     
     /**
@@ -31,7 +43,7 @@ public class ShopPage extends BasePage {
      * @return ShopPage实例
      */
     public ShopPage open() {
-        navigateTo("/#/user/shop");
+        navigateTo("/user/shop");
         return this;
     }
     
@@ -150,11 +162,7 @@ public class ShopPage extends BasePage {
         if (index < buttons.size()) {
             buttons.get(index).click();
             // 等待添加成功提示
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            waitForVisibility(By.cssSelector(".el-message--success"));
         }
         return this;
     }
@@ -168,6 +176,7 @@ public class ShopPage extends BasePage {
         List<WebElement> products = driver.findElements(productItems);
         if (index < products.size()) {
             products.get(index).click();
+            waitForUrlContains("/user/shop/product/", 10);
             return new ProductDetailPage(driver);
         }
         throw new IndexOutOfBoundsException("商品索引超出范围");
@@ -179,8 +188,9 @@ public class ShopPage extends BasePage {
      * @return ShopPage实例
      */
     public ShopPage goToPage(int pageNumber) {
-        By pageButton = By.xpath("//div[contains(@class,'el-pagination')]//li[text()='" + pageNumber + "']");
+        By pageButton = By.xpath("//ul[@class='el-pager']/li[text()='" + pageNumber + "']");
         if (isElementPresent(pageButton)) {
+            scrollToElement(pageButton);
             click(pageButton);
             // 等待页面加载
             try {

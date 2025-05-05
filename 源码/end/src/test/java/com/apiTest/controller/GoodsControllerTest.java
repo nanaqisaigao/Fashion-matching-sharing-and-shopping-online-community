@@ -1,7 +1,6 @@
 package com.apiTest.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mty.entity.Goods;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +16,7 @@ import java.util.Map;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-public class GoodsControllerTest {
+public class GoodsControllerTest extends BaseApiTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -31,17 +30,39 @@ public class GoodsControllerTest {
 
     @Test
     public void testSelectPage() throws Exception {
-        Map<String, String> params = new HashMap<>();
-        params.put("currentPage", "1");
-        params.put("pagesize", "10");
+        Map<String, Object> params = new HashMap<>();
+        params.put("currentPage", 1);
+        params.put("pagesize", 10);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/goods/selectPage")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(params)))
-                .andExpect(MockMvcResultMatchers.status().isOk());
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(0))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.data").exists());
     }
 
+    @Test
+    public void testGetById() throws Exception {
+        // 测试获取ID为1的商品
+        mockMvc.perform(MockMvcRequestBuilders.get("/goods/getById/1"))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(0));
+    }
 
+    @Test
+    public void testSelectAll() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get("/goods/selectAll"))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(0))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.data").isArray());
+    }
 
-
+    @Test
+    public void testSearch() throws Exception {
+        // 测试搜索名称包含"衬衫"的商品
+        mockMvc.perform(MockMvcRequestBuilders.get("/goods/search/衬衫"))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(0));
+    }
 }

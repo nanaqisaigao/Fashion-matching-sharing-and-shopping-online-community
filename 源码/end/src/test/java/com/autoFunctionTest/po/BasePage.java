@@ -9,6 +9,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.Properties;
 
 /**
@@ -31,7 +32,7 @@ public class BasePage {
             
             // 设置显式等待时间
             int waitTime = Integer.parseInt(config.getProperty("webdriver.explicit.wait", "15"));
-            wait = new WebDriverWait(driver, waitTime);
+            wait = new WebDriverWait(driver, Duration.ofSeconds(waitTime));
             
             // 获取基础URL
             baseUrl = config.getProperty("base.url", "http://localhost:8080");
@@ -114,6 +115,16 @@ public class BasePage {
      */
     protected void waitForClickable(By locator) {
         wait.until(ExpectedConditions.elementToBeClickable(locator));
+    }
+    
+    /**
+     * 等待URL包含特定字符串
+     * @param urlPart URL的部分内容
+     * @param timeoutInSeconds 超时时间（秒）
+     */
+    protected void waitForUrlContains(String urlPart, int timeoutInSeconds) {
+        WebDriverWait urlWait = new WebDriverWait(driver, Duration.ofSeconds(timeoutInSeconds));
+        urlWait.until(ExpectedConditions.urlContains(urlPart));
     }
     
     /**

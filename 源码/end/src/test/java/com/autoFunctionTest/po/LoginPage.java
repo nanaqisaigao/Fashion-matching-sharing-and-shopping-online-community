@@ -8,15 +8,22 @@ import org.testng.Assert;
  * 登录页面对象类
  */
 public class LoginPage extends BasePage {
-    // 登录表单元素定位器
-    private By usernameInput = By.cssSelector("input[placeholder='账号']");
-    private By passwordInput = By.cssSelector("input[placeholder='密码']");
-    private By loginButton = By.cssSelector(".login-btn");
-    private By errorMessage = By.cssSelector(".el-message--error");
-    private By switchTabButton = By.cssSelector(".login-switch");
+    // 登录表单元素定位器 - 根据配置文件获取
+    private By usernameInput;
+    private By passwordInput;
+    private By loginButton;
+    private By errorMessage;
+    private By switchTabButton;
     
     public LoginPage(WebDriver driver) {
         super(driver);
+        
+        // 从配置文件中获取选择器
+        usernameInput = By.cssSelector(config.getProperty("login.username.selector", "input[placeholder='请输入账号']"));
+        passwordInput = By.cssSelector(config.getProperty("login.password.selector", "input[type='password']"));
+        loginButton = By.cssSelector(config.getProperty("login.button.selector", "button.el-button--primary"));
+        errorMessage = By.cssSelector(config.getProperty("login.error.selector", ".el-message--error"));
+        switchTabButton = By.cssSelector(config.getProperty("login.tab.selector", ".login-type span:nth-child(2)"));
     }
     
     /**
@@ -24,7 +31,7 @@ public class LoginPage extends BasePage {
      * @return LoginPage实例
      */
     public LoginPage open() {
-        navigateTo("/#/userlogin");
+        navigateTo("/userlogin");
         return this;
     }
     
@@ -56,7 +63,7 @@ public class LoginPage extends BasePage {
     }
     
     /**
-     * 切换标签（如用户/管理员）
+     * 切换标签（用户/管理员）
      */
     public void switchTab() {
         click(switchTabButton);
@@ -75,9 +82,8 @@ public class LoginPage extends BasePage {
         
         // 等待页面跳转 (最多等待10秒)
         try {
-            Thread.sleep(2000); // 等待页面跳转
-            String currentUrl = driver.getCurrentUrl();
-            return currentUrl.contains("/user/") || currentUrl.contains("/admin/");
+            waitForUrlContains("/user/", 10);
+            return driver.getCurrentUrl().contains("/user/") || driver.getCurrentUrl().contains("/admin/");
         } catch (Exception e) {
             return false;
         }

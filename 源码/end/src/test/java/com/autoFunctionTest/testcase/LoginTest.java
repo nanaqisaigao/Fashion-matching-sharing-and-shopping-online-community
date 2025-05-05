@@ -65,6 +65,10 @@ public class LoginTest extends BaseTest {
         
         // 验证错误消息
         Assert.assertTrue(loginPage.hasErrorMessage(), "应该显示错误消息");
+        
+        // 验证依然在登录页面
+        String currentUrl = driver.getCurrentUrl();
+        Assert.assertTrue(currentUrl.contains("/userlogin"), "应该停留在登录页面");
     }
     
     /**
@@ -82,6 +86,10 @@ public class LoginTest extends BaseTest {
         
         // 验证错误消息
         Assert.assertTrue(loginPage.hasErrorMessage(), "应该显示错误消息");
+        
+        // 验证依然在登录页面
+        String currentUrl = driver.getCurrentUrl();
+        Assert.assertTrue(currentUrl.contains("/userlogin"), "应该停留在登录页面");
     }
     
     /**
@@ -98,7 +106,7 @@ public class LoginTest extends BaseTest {
         
         // 验证依然在登录页面
         String currentUrl = driver.getCurrentUrl();
-        Assert.assertTrue(currentUrl.contains("/login"), "应该停留在登录页面");
+        Assert.assertTrue(currentUrl.contains("/userlogin"), "应该停留在登录页面");
     }
     
     /**
@@ -117,6 +125,6 @@ public class LoginTest extends BaseTest {
         
         // 验证依然在登录页面
         String currentUrl = driver.getCurrentUrl();
-        Assert.assertTrue(currentUrl.contains("/login"), "应该停留在登录页面");
+        Assert.assertTrue(currentUrl.contains("/userlogin"), "应该停留在登录页面");
     }
 } 

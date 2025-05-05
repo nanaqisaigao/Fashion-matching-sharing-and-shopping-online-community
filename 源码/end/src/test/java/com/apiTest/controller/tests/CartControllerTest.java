@@ -4,10 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -15,10 +17,12 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@ExtendWith(SpringExtension.class)
 @SpringBootTest
 @AutoConfigureMockMvc
 public class CartControllerTest {
@@ -52,18 +56,24 @@ public class CartControllerTest {
             MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post("/login")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(params)))
+                    .andExpect(MockMvcResultMatchers.status().isOk())
                     .andReturn();
 
             String response = result.getResponse().getContentAsString();
             Map<String, Object> responseMap = objectMapper.readValue(response, Map.class);
-            Map<String, Object> data = (Map<String, Object>) responseMap.get("data");
-            token = (String) data.get("token");
-            Map<String, Object> userInfo = (Map<String, Object>) data.get("userInfo");
-            userId = (int) userInfo.get("id");
             
-            assertNotNull(token, "登录成功后应返回token");
+            if (responseMap.get("code").equals(200)) {
+                Map<String, Object> data = (Map<String, Object>) responseMap.get("data");
+                token = (String) data.get("token");
+                Map<String, Object> userInfo = (Map<String, Object>) data.get("userInfo");
+                userId = (int) userInfo.get("id");
+                
+                assertNotNull(token, "登录成功后应返回token");
+            } else {
+                throw new RuntimeException("登录失败: " + responseMap.get("msg"));
+            }
         } catch (Exception e) {
-            throw new RuntimeException("登录失败", e);
+            throw new RuntimeException("登录操作异常", e);
         }
     }
 
@@ -78,18 +88,24 @@ public class CartControllerTest {
         MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post("/goods/selectPage")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(params)))
+                .andExpect(MockMvcResultMatchers.status().isOk())
                 .andReturn();
         
         String response = result.getResponse().getContentAsString();
         Map<String, Object> responseMap = objectMapper.readValue(response, Map.class);
-        Map<String, Object> data = (Map<String, Object>) responseMap.get("data");
         
-        if (data == null || ((java.util.List)data.get("list")).isEmpty()) {
-            throw new RuntimeException("没有可用的商品数据，无法进行购物车测试");
+        if (responseMap.get("code").equals(0)) {
+            Map<String, Object> data = (Map<String, Object>) responseMap.get("data");
+            
+            if (data == null || ((List)data.get("list")).isEmpty()) {
+                throw new RuntimeException("没有可用的商品数据，无法进行购物车测试");
+            }
+            
+            Map<String, Object> product = (Map<String, Object>) ((List)data.get("list")).get(0);
+            return (int) product.get("id");
+        } else {
+            throw new RuntimeException("获取商品失败: " + responseMap.get("msg"));
         }
-        
-        Map<String, Object> product = (Map<String, Object>) ((java.util.List)data.get("list")).get(0);
-        return (int) product.get("id");
     }
 
     @Test
@@ -176,7 +192,7 @@ public class CartControllerTest {
         
         String response = result.getResponse().getContentAsString();
         Map<String, Object> responseMap = objectMapper.readValue(response, Map.class);
-        java.util.List<Map<String, Object>> cartItems = (java.util.List<Map<String, Object>>) responseMap.get("data");
+        List<Map<String, Object>> cartItems = (List<Map<String, Object>>) responseMap.get("data");
         
         boolean found = false;
         for (Map<String, Object> item : cartItems) {
@@ -235,7 +251,7 @@ public class CartControllerTest {
         
         String checkResponse = checkResult.getResponse().getContentAsString();
         Map<String, Object> checkResponseMap = objectMapper.readValue(checkResponse, Map.class);
-        java.util.List<Map<String, Object>> cartItems = (java.util.List<Map<String, Object>>) checkResponseMap.get("data");
+        List<Map<String, Object>> cartItems = (List<Map<String, Object>>) checkResponseMap.get("data");
         
         boolean found = false;
         for (Map<String, Object> item : cartItems) {
@@ -251,61 +267,34 @@ public class CartControllerTest {
     @Test
     @DisplayName("测试清空购物车")
     public void testClearCart() throws Exception {
-        // 先添加几个商品到购物车
-        int productId = getProductId();
-        
-        Map<String, Object> addParams = new HashMap<>();
-        addParams.put("userId", userId);
-        addParams.put("productId", productId);
-        addParams.put("count", 1);
-        
-        mockMvc.perform(MockMvcRequestBuilders.post("/cart/add")
-                .header("token", token)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(addParams)));
-        
-        // 清空购物车 (假设有提供此API)
-        // 如果没有直接清空购物车的API，可以遍历购物车列表并逐个删除
-        Map<String, Object> listParams = new HashMap<>();
-        listParams.put("userId", userId);
-        
-        MvcResult listResult = mockMvc.perform(MockMvcRequestBuilders.post("/cart/selectByUserId")
-                .header("token", token)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(listParams)))
-                .andReturn();
-        
-        String listResponse = listResult.getResponse().getContentAsString();
-        Map<String, Object> listResponseMap = objectMapper.readValue(listResponse, Map.class);
-        java.util.List<Map<String, Object>> cartItems = (java.util.List<Map<String, Object>>) listResponseMap.get("data");
-        
-        // 逐个删除购物车项
-        for (Map<String, Object> item : cartItems) {
-            Map<String, Object> deleteParams = new HashMap<>();
-            deleteParams.put("id", item.get("id"));
-            
-            mockMvc.perform(MockMvcRequestBuilders.post("/cart/delete")
-                    .header("token", token)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(objectMapper.writeValueAsString(deleteParams)))
-                    .andExpect(MockMvcResultMatchers.status().isOk())
-                    .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(200));
+        // 确保先添加商品到购物车
+        if (cartItemId == null) {
+            testAddToCart();
         }
         
-        // 验证购物车已清空
-        MvcResult checkResult = mockMvc.perform(MockMvcRequestBuilders.post("/cart/selectByUserId")
+        // 清空购物车
+        Map<String, Object> params = new HashMap<>();
+        params.put("userId", userId);
+        
+        mockMvc.perform(MockMvcRequestBuilders.post("/cart/deleteByUserId")
                 .header("token", token)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(listParams)))
+                .content(objectMapper.writeValueAsString(params)))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(200))
-                .andDo(MockMvcResultHandlers.print())
+                .andDo(MockMvcResultHandlers.print());
+        
+        // 验证购物车已清空
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post("/cart/selectByUserId")
+                .header("token", token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(params)))
                 .andReturn();
         
-        String checkResponse = checkResult.getResponse().getContentAsString();
-        Map<String, Object> checkResponseMap = objectMapper.readValue(checkResponse, Map.class);
-        java.util.List<Map<String, Object>> remainingItems = (java.util.List<Map<String, Object>>) checkResponseMap.get("data");
+        String response = result.getResponse().getContentAsString();
+        Map<String, Object> responseMap = objectMapper.readValue(response, Map.class);
+        List<Map<String, Object>> cartItems = (List<Map<String, Object>>) responseMap.get("data");
         
-        assertTrue(remainingItems.isEmpty(), "购物车应该已清空");
+        assertTrue(cartItems.isEmpty(), "清空购物车后应该没有购物车项");
     }
 } 

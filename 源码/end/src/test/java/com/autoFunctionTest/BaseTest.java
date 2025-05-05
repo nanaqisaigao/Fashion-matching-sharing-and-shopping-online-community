@@ -17,9 +17,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.util.Date;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
 /**
  * 所有功能测试的基类，管理WebDriver和测试生命周期
@@ -41,28 +41,32 @@ public class BaseTest {
             // 设置WebDriver路径
             System.setProperty("webdriver.edge.driver", "src/test/resources/msedgedriver.exe");
             
-//            // 配置Edge浏览器选项
-//            EdgeOptions options = new EdgeOptions();
-//            if (Boolean.parseBoolean(config.getProperty("webdriver.headless", "false"))) {
-//                options.addArguments("--headless");
-//            }
-//
+            // 配置Edge浏览器选项
+            EdgeOptions options = new EdgeOptions();
+            if (Boolean.parseBoolean(config.getProperty("webdriver.headless", "false"))) {
+                options.addArguments("--headless");
+            }
+            
+            // 添加更多浏览器选项以提高稳定性
+            options.addArguments("--disable-extensions");
+            options.addArguments("--disable-gpu");
+            options.addArguments("--no-sandbox");
+            options.addArguments("--disable-dev-shm-usage");
+            
             // 初始化WebDriver
-            driver = new EdgeDriver();
-//
+            driver = new EdgeDriver(options);
+            
             // 设置超时时间
             driver.manage().timeouts().implicitlyWait(
-                Long.parseLong(config.getProperty("webdriver.implicit.wait", "10")), 
-                TimeUnit.SECONDS
+                Duration.ofSeconds(Long.parseLong(config.getProperty("webdriver.implicit.wait", "10")))
             );
             driver.manage().timeouts().pageLoadTimeout(
-                Long.parseLong(config.getProperty("webdriver.page.load.timeout", "30")), 
-                TimeUnit.SECONDS
+                Duration.ofSeconds(Long.parseLong(config.getProperty("webdriver.page.load.timeout", "30")))
             );
             
             driver.manage().window().maximize();
             
-            // 设置基础URL
+            // 设置基础URL - 确保与前端一致
             baseUrl = config.getProperty("base.url", "http://localhost:8080");
             
         } catch (IOException e) {
